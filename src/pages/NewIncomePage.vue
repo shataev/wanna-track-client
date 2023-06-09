@@ -1,12 +1,12 @@
 <template>
   <h1>
-    Income Page
+    New Income Page
   </h1>
 </template>
 
 <script>
 export default {
-  name: "IncomePage"
+  name: "NewIncomePage"
 }
 </script>
 

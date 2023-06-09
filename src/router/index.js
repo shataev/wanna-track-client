@@ -2,6 +2,11 @@ import { createRouter, createWebHistory } from 'vue-router'
 import HomePage from "@/pages/HomePage.vue";
 import AuthPage from "@/pages/AuthPage.vue";
 import ExpensesPage from "@/pages/ExpensesPage.vue";
+import IncomePage from "@/pages/IncomesPage.vue";
+import SignInPage from "@/pages/SignInPage.vue";
+import SignUpPage from "@/pages/SignUpPage.vue";
+import NewExpensePage from "@/pages/NewExpensePage.vue";
+import NewIncomePage from "@/pages/NewIncomePage.vue";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -31,18 +36,22 @@ const router = createRouter({
     {
       path: '/signin',
       name: 'signIn',
-      // route level code-splitting
-      // this generates a separate chunk (About.[hash].js) for this route
-      // which is lazy-loaded when the route is visited.
-      component: () => import('../pages/SignInPage.vue')
+      component: SignInPage
     },
     {
       path: '/signup',
       name: 'signUp',
-      // route level code-splitting
-      // this generates a separate chunk (About.[hash].js) for this route
-      // which is lazy-loaded when the route is visited.
-      component: () => import('../pages/SignUpPage.vue')
+      component: SignUpPage
+    },
+    {
+      path: '/new-expense',
+      name: 'newExpense',
+      component: NewExpensePage
+    },
+    {
+      path: '/new-income',
+      name: 'newIncome',
+      component: NewIncomePage
     }
   ]
 })
