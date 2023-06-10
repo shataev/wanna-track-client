@@ -1,15 +1,19 @@
 <template>
   <div class="auth-page-container">
     <v-img src="/images/logo.svg" height="150" class="mb-16"></v-img>
-    <v-btn rounded flat to="/signin" block class="mb-6 font-weight-bold text-none" color="#FFDA4C" height="54">Sign In</v-btn>
-    <v-btn rounded flat to="/signup" block class="font-weight-bold text-none" color="#AFC97E" height="54">Sign Up</v-btn>
-    <router-view/>
+
+    <app-button color="#FFDA4C" to="/signin" class="mb-6">Sign In</app-button>
+    <app-button color="#AFC97E" to="/signup">Sign Up</app-button>
+    <router-view />
   </div>
 </template>
 
 <script>
+import AppButton from '@/components/AppButton.vue'
+
 export default {
-  name: "AuthPage"
+  name: 'AuthPage',
+  components: { AppButton }
 }
 </script>
 
