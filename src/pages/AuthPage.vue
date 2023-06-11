@@ -4,6 +4,7 @@
 
     <app-button color="#FFDA4C" to="/signin" class="mb-6">Sign In</app-button>
     <app-button color="#AFC97E" to="/signup">Sign Up</app-button>
+
     <router-view />
   </div>
 </template>

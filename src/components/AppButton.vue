@@ -2,6 +2,7 @@
   <v-btn
     v-bind="$attrs"
     rounded
+    :color="$attrs.color ?? '#FFDA4C'"
     flat
     block
     class="app-button font-weight-bold text-none"
