@@ -1,11 +1,15 @@
 <template>
-  <v-input
+  <v-text-field
     v-bind="$attrs"
-    class="app-input bg-app-light rounded-pill text-app-dark"
+    class="rounded-pill text-app-dark"
+    variant="solo"
+    bg-color="app-light"
+    flat
+    rounded="pill"
+    density="comfortable"
     hide-details="auto"
   >
-    <slot />
-  </v-input>
+  </v-text-field>
 </template>
 
 <script>
@@ -14,11 +18,9 @@ export default {
 }
 </script>
 
-<style scoped>
-.app-input {
-  color: #5f5b53;
-  height: 48px;
-  font-size: 18px;
-  padding: 10px 16px;
+<style scoped lang="scss">
+// TODO: fix chrome autofill styles
+:deep(input) {
+  color: #5f5b53 !important;
 }
 </style>

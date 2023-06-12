@@ -16,16 +16,17 @@ const vuetify = createVuetify({
   components,
   directives,
   theme: {
-    defaultTheme: 'dark',
+    defaultTheme: 'light',
     themes: {
-      dark: {
+      light: {
         colors: {
           'app-light': '#F6FDEB',
           'app-green-darker': '#CAE39D',
           'app-green-lighter': '#A7C76C',
           'app-yellow-darker': '#E1D165',
           'app-light-lighter': '#FFDA4D',
-          'app-dark': '#5F5B53'
+          'app-dark': '#5F5B53',
+          'app-link': '#ffda4c'
         }
       }
     }
