@@ -11,6 +11,8 @@ import 'vuetify/styles'
 import { createVuetify } from 'vuetify'
 import * as components from 'vuetify/components'
 import * as directives from 'vuetify/directives'
+import '@mdi/font/css/materialdesignicons.css'
+import { aliases, mdi } from 'vuetify/iconsets/mdi'
 
 const vuetify = createVuetify({
   components,
@@ -24,11 +26,18 @@ const vuetify = createVuetify({
           'app-green-darker': '#CAE39D',
           'app-green-lighter': '#A7C76C',
           'app-yellow-darker': '#E1D165',
-          'app-light-lighter': '#FFDA4D',
+          'app-yellow-lighter': '#FFDA4D',
           'app-dark': '#5F5B53',
           'app-link': '#ffda4c'
         }
       }
+    }
+  },
+  icons: {
+    defaultSet: 'mdi',
+    aliases,
+    sets: {
+      mdi
     }
   }
 })
