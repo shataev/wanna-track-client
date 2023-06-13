@@ -11,7 +11,7 @@
     ></v-btn>
   </header>
   <v-btn-toggle
-    class="text-none app-tabs bg-app-green-lighter"
+    class="text-none app-tabs bg-app-green-lighter mb-6"
     rounded="pill"
     density="compact"
     v-model="tab"
