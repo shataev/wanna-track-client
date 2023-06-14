@@ -35,9 +35,12 @@
   <div class="values">
     <app-value-button
       v-for="expense in expenses"
+      :key="expense.name"
       :icon="expense.icon"
       :name="expense.name"
       :value="expense.value"
+      :color="expense.color"
+      :progress="expense.value / total"
     >
     </app-value-button>
   </div>
@@ -50,6 +53,7 @@ import AppValueButton from '@/components/AppValueButton.vue'
 
 ChartJS.register(ArcElement)
 
+// TODO: move into plugins
 const centerText = {
   id: 'centerText',
   afterDatasetsDraw(chart) {
@@ -71,6 +75,7 @@ const centerText = {
   }
 }
 
+// TODO: change on real data
 const expenses = [
   {
     name: 'Restaurants',
@@ -126,15 +131,6 @@ export default {
           value: 'calendar'
         }
       ],
-      /*chartData: {
-        labels: ['VueJs', 'EmberJs', 'ReactJs', 'AngularJs'],
-        datasets: [
-          {
-            backgroundColor: ['#E1D165', '#CAE39D', '#FFDA4C', '#A7C76C'],
-            data: [40, 20, 80, 10]
-          }
-        ]
-      },*/
       chartOptions: {
         responsive: true,
         maintainAspectRatio: false,
