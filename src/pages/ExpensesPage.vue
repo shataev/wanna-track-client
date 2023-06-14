@@ -1,5 +1,5 @@
 <template>
-  <div class="chart-container position-relative d-flex flex-column overflow-hidden">
+  <div class="chart-container position-relative d-flex flex-column overflow-hidden mb-4">
     <div class="background-layer position-absolute"></div>
     <header class="chart-header mb-5">
       <v-btn-toggle
@@ -32,11 +32,21 @@
       />
     </div>
   </div>
+  <div class="values">
+    <app-value-button
+      v-for="expense in expenses"
+      :icon="expense.icon"
+      :name="expense.name"
+      :value="expense.value"
+    >
+    </app-value-button>
+  </div>
 </template>
 
 <script>
 import { Doughnut } from 'vue-chartjs'
 import { Chart as ChartJS, ArcElement } from 'chart.js'
+import AppValueButton from '@/components/AppValueButton.vue'
 
 ChartJS.register(ArcElement)
 
@@ -60,13 +70,40 @@ const centerText = {
     ctx.fillText(`${totalValue}$`, width / 2, (height + top + fontSize) / 2)
   }
 }
+
+const expenses = [
+  {
+    name: 'Restaurants',
+    value: 225,
+    color: '#E1D165',
+    icon: 'mdi-noodles'
+  },
+  {
+    name: 'Shopping',
+    value: 150,
+    color: '#CAE39D',
+    icon: 'mdi-cart'
+  },
+  {
+    name: 'House',
+    value: 75,
+    color: '#FFDA4C',
+    icon: 'mdi-home'
+  },
+  {
+    name: 'Petrol',
+    value: 75,
+    color: '#A7C76C',
+    icon: 'mdi-gas-station'
+  }
+]
 export default {
   name: 'ExpensesPage',
-  components: { Doughnut },
+  components: { AppValueButton, Doughnut },
   data() {
     return {
+      expenses: [...expenses],
       currentFilter: 'day',
-      total: 500,
       dateFilters: [
         {
           text: 'Day',
@@ -89,7 +126,7 @@ export default {
           value: 'calendar'
         }
       ],
-      chartData: {
+      /*chartData: {
         labels: ['VueJs', 'EmberJs', 'ReactJs', 'AngularJs'],
         datasets: [
           {
@@ -97,7 +134,7 @@ export default {
             data: [40, 20, 80, 10]
           }
         ]
-      },
+      },*/
       chartOptions: {
         responsive: true,
         maintainAspectRatio: false,
@@ -107,6 +144,28 @@ export default {
     }
   },
   computed: {
+    total() {
+      return this.expenses.reduce((acc, expense) => acc + expense.value, 0)
+    },
+    chartData() {
+      const result = {
+        labels: [],
+        datasets: [
+          {
+            backgroundColor: [],
+            data: []
+          }
+        ]
+      }
+
+      this.expenses.map((expense) => {
+        result.labels.push(expense.name)
+        result.datasets[0].backgroundColor.push(expense.color)
+        result.datasets[0].data.push(expense.value)
+      })
+
+      return result
+    },
     chartTitle() {
       return this.dateFilters.find((filter) => filter.value === this.currentFilter).text
     }
