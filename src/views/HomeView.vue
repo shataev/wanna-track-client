@@ -3,11 +3,12 @@
     <h1 class="flex-grow-1 text-center text-app-light title">Home</h1>
     <v-btn
       icon="$plus"
+      @click="goToAddItem"
       variant="tonal"
       class="bg-app-yellow-lighter"
       height="37"
       width="37"
-      color="app-dark"
+      color="app-green-lighter"
     ></v-btn>
   </header>
   <v-btn-toggle
@@ -47,6 +48,9 @@ export default {
   methods: {
     tabClass(value) {
       return this.tab === value ? 'bg-app-yellow-lighter' : 'bg-transparent'
+    },
+    goToAddItem() {
+      this.$router.push({ name: 'newExpense' })
     }
   }
 }

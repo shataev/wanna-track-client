@@ -43,7 +43,7 @@ const router = createRouter({
       component: SignUpPage
     },
     {
-      path: '/new-expense',
+      path: '/expenses/new',
       name: 'newExpense',
       component: NewExpensePage
     },
