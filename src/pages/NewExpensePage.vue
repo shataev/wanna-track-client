@@ -18,6 +18,7 @@
       <label for="amount" class="form-label text-app-light d-flex mb-1">Amount</label>
       <v-text-field
         type="number"
+        placeholder="Enter amount"
         name="amount"
         prefix="$"
         class="form-element form-element-input bg-transparent text-app-light"
@@ -26,7 +27,11 @@
       ></v-text-field>
     </div>
     <div class="form-element-wrapper mb-4">
-      <label for="amount" class="form-label text-app-light d-flex mb-1">Comment</label>
+      <label for="amount" class="form-label text-app-light d-flex mb-1">Category</label>
+      <category-buttons :categories="categories" v-model="category" />
+    </div>
+    <div class="form-element-wrapper mb-4">
+      <label for="comment" class="form-label text-app-light d-flex mb-1">Comment</label>
       <v-textarea
         type="text"
         placeholder="Enter comments"
@@ -41,10 +46,87 @@
 
 <script>
 import LogoIcon from '@/components/icons/LogoIcon.vue'
+import CategoryButtons from '@/components/CategoryButtons.vue'
+
+// TODO: change on real data
+const categories = [
+  {
+    name: 'Shopping',
+    value: 2,
+    color: '#CAE39D',
+    icon: 'mdi-cart'
+  },
+  {
+    name: 'Restaurants',
+    value: 1,
+    color: '#E1D165',
+    icon: 'mdi-noodles'
+  },
+  {
+    name: 'Leisure',
+    value: 41,
+    color: '#A7C76C',
+    icon: 'mdi-controller'
+  },
+  {
+    name: 'Clothes',
+    value: 42,
+    color: '#A7C76C',
+    icon: 'mdi-tshirt-crew'
+  },
+  {
+    name: 'Travel',
+    value: 52,
+    color: '#A7C76C',
+    icon: 'mdi-wallet-travel'
+  },
+  {
+    name: 'Internet',
+    value: 53,
+    color: '#A7C76C',
+    icon: 'mdi-web'
+  },
+  {
+    name: 'Mobile',
+    value: 54,
+    color: '#A7C76C',
+    icon: 'mdi-cellphone'
+  },
+  {
+    name: 'House',
+    value: 3,
+    color: '#FFDA4C',
+    icon: 'mdi-home'
+  },
+  {
+    name: 'Petrol',
+    value: 4,
+    color: '#A7C76C',
+    icon: 'mdi-gas-station'
+  },
+  {
+    name: 'Pets',
+    value: 5,
+    color: '#CAE39D',
+    icon: 'mdi-paw'
+  },
+  {
+    name: 'Service',
+    value: 6,
+    color: '#FFDA4C',
+    icon: 'mdi-car'
+  }
+]
 
 export default {
   name: 'NewExpensePage',
-  components: { LogoIcon },
+  data() {
+    return {
+      categories,
+      category: null
+    }
+  },
+  components: { CategoryButtons, LogoIcon },
   methods: {
     goBack() {
       this.$router.back()
@@ -97,5 +179,10 @@ $border-raduis-text-field: 999px;
       border: none !important;
     }
   }
+}
+
+.form-element-radio-group {
+  border: 1px solid #f6fdeb;
+  border-radius: 26px !important;
 }
 </style>

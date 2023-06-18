@@ -1,0 +1,74 @@
+<template>
+  <v-radio-group
+    name="category"
+    v-model="category"
+    class="form-element form-element-radio-group bg-transparent text-app-light py-5"
+    inline
+    variant="outlined"
+    hide-details="auto"
+    v-bind="$attrs"
+  >
+    <v-radio
+      v-for="category in categories"
+      :label="category.name"
+      :key="category.value"
+      :true-icon="category.icon"
+      :false-icon="category.icon"
+      :value="category.value"
+      class="flex-column"
+    ></v-radio>
+    <div class="add-category-button">
+      <v-btn variant="text" :ripple="false" icon="mdi-plus-circle-outline" size="x-large"></v-btn>
+    </div>
+  </v-radio-group>
+</template>
+
+<script>
+export default {
+  name: 'CategoryButtons',
+  props: {
+    categories: {
+      type: Array,
+      required: true
+    }
+  }
+}
+</script>
+
+<style scoped lang="scss">
+:deep(.v-selection-control) {
+  flex-basis: 25%;
+  margin-top: 14px;
+
+  &:nth-child(-n + 4) {
+    margin-top: 0;
+  }
+
+  &:nth-child(3n + 1) {
+    color: #f6fdeb;
+  }
+
+  &:nth-child(3n + 2) {
+    color: #ffda4c;
+  }
+
+  &:nth-child(3n + 3) {
+    color: #cae39d;
+  }
+
+  .v-label {
+    font-size: 14px;
+  }
+
+  .v-icon:before {
+    font-size: 42px;
+  }
+}
+
+.add-category-button {
+  flex-basis: 25%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+</style>

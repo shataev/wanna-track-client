@@ -14,8 +14,6 @@ import * as directives from 'vuetify/directives'
 import '@mdi/font/css/materialdesignicons.css'
 import { aliases, mdi } from 'vuetify/iconsets/mdi'
 
-import LogoIcon from '@/components/icons/LogoIcon.vue'
-
 const vuetify = createVuetify({
   components,
   directives,
