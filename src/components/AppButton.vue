@@ -5,7 +5,7 @@
     :color="$attrs.color ?? '#FFDA4C'"
     flat
     block
-    class="app-button font-weight-bold text-none"
+    class="app-button font-weight-bold"
     height="54"
   >
     <slot>Button</slot>

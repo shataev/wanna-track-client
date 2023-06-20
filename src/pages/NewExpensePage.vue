@@ -42,16 +42,19 @@
         name="comment"
         class="form-element form-element-textarea bg-transparent text-app-light"
         variant="outlined"
+        rows="3"
         hide-details="auto"
       ></v-textarea>
     </div>
   </v-form>
+  <app-button class="mt-12">Save</app-button>
 </template>
 
 <script>
 import LogoIcon from '@/components/icons/LogoIcon.vue'
 import CategoryButtons from '@/components/CategoryButtons.vue'
 import AppDatepicker from '@/components/AppDatepicker.vue'
+import AppButton from '@/components/AppButton.vue'
 
 // TODO: change on real data
 const categories = [
@@ -127,13 +130,13 @@ export default {
   name: 'NewExpensePage',
   data() {
     return {
-      amount: 0,
+      amount: null,
       categories,
       category: null,
       date: new Date()
     }
   },
-  components: { AppDatepicker, CategoryButtons, LogoIcon },
+  components: { AppDatepicker, CategoryButtons, LogoIcon, AppButton },
   methods: {
     goBack() {
       this.$router.back()
