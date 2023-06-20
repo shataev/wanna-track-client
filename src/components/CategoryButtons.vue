@@ -1,7 +1,6 @@
 <template>
   <v-radio-group
     name="category"
-    v-model="category"
     class="form-element form-element-radio-group bg-transparent text-app-light py-5"
     inline
     variant="outlined"
