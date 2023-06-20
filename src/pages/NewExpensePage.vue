@@ -20,15 +20,19 @@
         type="number"
         placeholder="Enter amount"
         name="amount"
-        prefix="$"
+        v-model="amount"
         class="form-element form-element-input bg-transparent text-app-light"
         variant="outlined"
         hide-details="auto"
       ></v-text-field>
     </div>
     <div class="form-element-wrapper mb-4">
-      <label for="amount" class="form-label text-app-light d-flex mb-1">Category</label>
+      <label for="categories" class="form-label text-app-light d-flex mb-1">Category</label>
       <category-buttons :categories="categories" v-model="category" />
+    </div>
+    <div class="form-element-wrapper mb-4">
+      <label for="date" class="form-label text-app-light d-flex mb-1">Date</label>
+      <app-datepicker v-model="date"></app-datepicker>
     </div>
     <div class="form-element-wrapper mb-4">
       <label for="comment" class="form-label text-app-light d-flex mb-1">Comment</label>
@@ -47,6 +51,7 @@
 <script>
 import LogoIcon from '@/components/icons/LogoIcon.vue'
 import CategoryButtons from '@/components/CategoryButtons.vue'
+import AppDatepicker from '@/components/AppDatepicker.vue'
 
 // TODO: change on real data
 const categories = [
@@ -122,11 +127,13 @@ export default {
   name: 'NewExpensePage',
   data() {
     return {
+      amount: 0,
       categories,
-      category: null
+      category: null,
+      date: new Date()
     }
   },
-  components: { CategoryButtons, LogoIcon },
+  components: { AppDatepicker, CategoryButtons, LogoIcon },
   methods: {
     goBack() {
       this.$router.back()

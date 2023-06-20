@@ -7,6 +7,13 @@
   resolved "https://registry.yarnpkg.com/@babel/parser/-/parser-7.22.5.tgz#721fd042f3ce1896238cf1b341c77eb7dee7dbea"
   integrity sha512-DFZMC9LJUG9PLOclRC32G63UXwzqS2koQC8dkx+PLdmt1xSePYpbT/NbsrJy8Q/muXz7o/h/d4A7Fuyixm559Q==
 
+"@babel/runtime@^7.21.0":
+  version "7.22.5"
+  resolved "https://registry.yarnpkg.com/@babel/runtime/-/runtime-7.22.5.tgz#8564dd588182ce0047d55d7a75e93921107b57ec"
+  integrity sha512-ecjvYlnAaZ/KVneE/OdKYBYfgXV3Ptu6zQWmgEF7vwKhQnvVS6bjMD2XYgj+SNvQ1GfK/pjgokfPkC/2CO8CuA==
+  dependencies:
+    regenerator-runtime "^0.13.11"
+
 "@esbuild/android-arm64@0.17.19":
   version "0.17.19"
   resolved "https://registry.yarnpkg.com/@esbuild/android-arm64/-/android-arm64-0.17.19.tgz#bafb75234a5d3d1b690e7c2956a599345e84a2fd"
@@ -317,6 +324,14 @@
   resolved "https://registry.yarnpkg.com/@vue/shared/-/shared-3.3.4.tgz#06e83c5027f464eef861c329be81454bc8b70780"
   integrity sha512-7OjdcV8vQ74eiz1TZLzZP4JwqM5fA94K6yntPS5Z25r9HDuGNzaGdgvwKYq6S+MxwF0TFRwe50fIR/MYnakdkQ==
 
+"@vuepic/vue-datepicker@^5.3.0":
+  version "5.3.0"
+  resolved "https://registry.yarnpkg.com/@vuepic/vue-datepicker/-/vue-datepicker-5.3.0.tgz#7343bc2b820684e754bf482db4bc38c767f95807"
+  integrity sha512-eW5LRa3mH5klbRaKedG96/KY4EZC7ns+Zs7A+4guRBL+dQQthd8HV0xyS9nkI7hjr1K5zU+FQ3TOdo/oX5r3og==
+  dependencies:
+    date-fns "^2.30.0"
+    date-fns-tz "^1.3.7"
+
 acorn-jsx@^5.3.2:
   version "5.3.2"
   resolved "https://registry.yarnpkg.com/acorn-jsx/-/acorn-jsx-5.3.2.tgz#7ed5bb55908b3b2f1bc55c6af1653bada7f07937"
@@ -462,6 +477,18 @@ csstype@^3.1.1:
   version "3.1.2"
   resolved "https://registry.yarnpkg.com/csstype/-/csstype-3.1.2.tgz#1d4bf9d572f11c14031f0436e1c10bc1f571f50b"
   integrity sha512-I7K1Uu0MBPzaFKg4nI5Q7Vs2t+3gWWW648spaF+Rg7pI9ds18Ugn+lvg4SHczUdKlHI5LWBXyqfS8+DufyBsgQ==
+
+date-fns-tz@^1.3.7:
+  version "1.3.8"
+  resolved "https://registry.yarnpkg.com/date-fns-tz/-/date-fns-tz-1.3.8.tgz#083e3a4e1f19b7857fa0c18deea6c2bc46ded7b9"
+  integrity sha512-qwNXUFtMHTTU6CFSFjoJ80W8Fzzp24LntbjFFBgL/faqds4e5mo9mftoRLgr3Vi1trISsg4awSpYVsOQCRnapQ==
+
+date-fns@^2.30.0:
+  version "2.30.0"
+  resolved "https://registry.yarnpkg.com/date-fns/-/date-fns-2.30.0.tgz#f367e644839ff57894ec6ac480de40cae4b0f4d0"
+  integrity sha512-fnULvOpxnC5/Vg3NCiWelDsLiUc9bRwAPs/+LfTLNvetFCtCTN+yQz15C/fs4AwX1R9K5GLtLfn8QW+dWisaAw==
+  dependencies:
+    "@babel/runtime" "^7.21.0"
 
 debug@^4.1.1, debug@^4.3.2, debug@^4.3.4:
   version "4.3.4"
@@ -1035,6 +1062,11 @@ readdirp@~3.6.0:
   dependencies:
     picomatch "^2.2.1"
 
+regenerator-runtime@^0.13.11:
+  version "0.13.11"
+  resolved "https://registry.yarnpkg.com/regenerator-runtime/-/regenerator-runtime-0.13.11.tgz#f6dca3e7ceec20590d07ada785636a90cdca17f9"
+  integrity sha512-kY1AZVr2Ra+t+piVaJ4gxaFaReZVH40AKNo7UCX6W+dEwBo/2oZJzqfuN1qLq1oL45o56cPaTXELwrTh8Fpggg==
+
 resolve-from@^4.0.0:
   version "4.0.0"
   resolved "https://registry.yarnpkg.com/resolve-from/-/resolve-from-4.0.0.tgz#4abcd852ad32dd7baabfe9b40e00a36db5f392e6"
@@ -1206,10 +1238,10 @@ vue@^3.3.2:
     "@vue/server-renderer" "3.3.4"
     "@vue/shared" "3.3.4"
 
-vuetify@^3.3.1:
-  version "3.3.3"
-  resolved "https://registry.yarnpkg.com/vuetify/-/vuetify-3.3.3.tgz#82904abbed936abaf775b8394b0d094d4b56cbc7"
-  integrity sha512-oLpm6L6Zvf4b7Ua8V3INnUkGoxbi04O68ymEbBDLrPFzmIkzAcwd9L/2Ega582PRJnjTBBZapa6KdmosvhVvgA==
+vuetify@^3.3.4:
+  version "3.3.4"
+  resolved "https://registry.yarnpkg.com/vuetify/-/vuetify-3.3.4.tgz#e4cbf3ae1d4f22a61bf5fe5a753c9e3e50cd6ff2"
+  integrity sha512-B05DX+xxzmA3HkSf8FMyhGIb1eCcwDsnaUl+kfNgsMcNnGVBhugmBpslK7O6gOzb1VGttsll5yGuHm7rh0rxzA==
 
 which@^2.0.1:
   version "2.0.2"

@@ -10,13 +10,14 @@
     "format": "prettier --write src/"
   },
   "dependencies": {
+    "@vuepic/vue-datepicker": "^5.3.0",
     "chart.js": "^4.3.0",
     "pinia": "^2.0.36",
     "sass": "^1.63.3",
     "vue": "^3.3.2",
     "vue-chartjs": "^5.2.0",
     "vue-router": "^4.2.0",
-    "vuetify": "^3.3.1"
+    "vuetify": "^3.3.4"
   },
   "devDependencies": {
     "@mdi/font": "^7.2.96",
