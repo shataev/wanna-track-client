@@ -43,11 +43,13 @@ const vuetify = createVuetify({
     }
   }
 })
+import validationPlugin from '@/plugins/validation.plugin'
 
 const app = createApp(App)
 
 app.use(createPinia())
 app.use(router)
+app.use(validationPlugin)
 app.use(vuetify)
 
 app.mount('#app')

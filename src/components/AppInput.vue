@@ -8,6 +8,7 @@
     rounded="pill"
     density="comfortable"
     hide-details="auto"
+    validate-on="input"
   >
   </v-text-field>
 </template>
@@ -19,7 +20,6 @@ export default {
 </script>
 
 <style scoped lang="scss">
-// TODO: fix chrome autofill styles
 :deep(input) {
   color: #5f5b53 !important;
 }

@@ -7,14 +7,13 @@
       <span class="page-subtitle text-app-light mb-1">{{ subtitle }}</span>
       <span class="page-subtitle-description text-app-light">{{ subtitleDescription }}</span>
     </div>
-    <form class="d-flex flex-column mb-2">
-      <slot />
-    </form>
+
+    <slot />
     <footer class="page-footer text-app-light text-center">
       {{ footerText }}
-      <router-link :to="footerLinkURL" class="auth-link text-decoration-none text-app-link">{{
-        footerLinkText
-      }}</router-link>
+      <router-link :to="footerLinkURL" class="auth-link text-decoration-none text-app-link">
+        {{ footerLinkText }}
+      </router-link>
     </footer>
   </div>
 </template>

@@ -7,48 +7,86 @@
     subtitle-description="Create your account to continue"
     subtitle="Hello!"
   >
-    <app-input type="text" name="name" v-model="name" class="mb-3" placeholder="Name"></app-input>
-    <app-input
-      type="email"
-      name="email"
-      v-model="email"
-      class="mb-3"
-      placeholder="Email"
-    ></app-input>
-    <app-input
-      type="text"
-      name="password"
-      v-model="password"
-      class="mb-3"
-      placeholder="Password"
-    ></app-input>
-    <app-input
-      type="text"
-      name="confirmPassword"
-      v-model="confirmPassword"
-      placeholder="Confirm Password"
-    ></app-input>
-    <app-button class="mt-12" @click="sendData">Sign Up</app-button>
+    <vee-form
+      class="d-flex flex-column mb-2"
+      :validation-schema="signUpValidationSchema"
+      v-slot="{ meta: { touched, valid } }"
+    >
+      <v-form>
+        <app-input-with-validation
+          name="name"
+          v-model="name"
+          placeholder="Name"
+        ></app-input-with-validation>
+        <app-input-with-validation
+          name="email"
+          v-model="email"
+          placeholder="Email"
+        ></app-input-with-validation>
+        <app-input-with-validation
+          type="password"
+          name="password"
+          v-model="password"
+          placeholder="Password"
+        ></app-input-with-validation>
+        <app-input-with-validation
+          type="password"
+          name="confirmPassword"
+          v-model="confirmPassword"
+          placeholder="ConfirmPassword"
+        ></app-input-with-validation>
+
+        <app-button class="mt-12" @click="sendData" :disabled="!(touched && valid)">
+          Sign Up
+        </app-button>
+      </v-form>
+    </vee-form>
   </auth-layout>
 </template>
 
 <script>
 import AppButton from '@/components/AppButton.vue'
-import AppInput from '@/components/AppInput.vue'
 import AuthLayout from '@/components/AuthLayout.vue'
 import { axiosInstance } from '@/api/axios'
+import AppInputWithValidation from '@/components/AppInputWithValidation.vue'
 
 export default {
   name: 'SignUpPage',
   data() {
     return {
-      name: null,
-      email: null,
-      password: null,
-      confirmPassword: null
+      name: '',
+      email: '',
+      password: '',
+      confirmPassword: ''
     }
   },
-  components: { AuthLayout, AppInput, AppButton },
+  computed: {
+    signUpValidationSchema() {
+      return {
+        name: {
+          required: true,
+          min: 3,
+          max: 100
+        },
+        email: {
+          required: true,
+          email: true,
+          min: 7,
+          max: 100
+        },
+        password: {
+          required: true,
+          min: 6,
+          max: 20
+        },
+        confirmPassword: {
+          required: true,
+          is: this.password
+        }
+      }
+    }
+  },
+  components: { AppInputWithValidation, AuthLayout, AppButton },
   methods: {
     async sendData(event) {
       event.preventDefault()
