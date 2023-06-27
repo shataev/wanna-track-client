@@ -47,8 +47,8 @@
 <script>
 import AppButton from '@/components/AppButton.vue'
 import AuthLayout from '@/components/AuthLayout.vue'
-import { axiosInstance } from '@/api/axios'
 import AppInputWithValidation from '@/components/AppInputWithValidation.vue'
+import sendRequest from '@/api/sendRequest'
 
 export default {
   name: 'SignUpPage',
@@ -90,21 +90,18 @@ export default {
   methods: {
     async sendData(event) {
       event.preventDefault()
-      try {
-        const response = await axiosInstance.post('/api/auth/signup', {
+
+      const data = await sendRequest({
+        url: '/api/auth/signup',
+        method: 'post',
+        body: {
           username: this.name,
           email: this.email,
           password: this.password
-        })
+        }
+      })
 
-        const { username, id, email, accessToken } = response.data
-
-        console.log(username, id, email, accessToken)
-
-        //await this.$router.push('/cost')
-      } catch (e) {
-        console.log(e)
-      }
+      console.log(data)
     }
   }
 }
