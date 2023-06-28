@@ -28,7 +28,7 @@
           placeholder="Password"
         ></app-input-with-validation>
 
-        <app-button class="mt-12" @click="sendSigninData" :disabled="!(touched && valid)">
+        <app-button class="mt-12" @click.prevent="sendData" :disabled="!(touched && valid)">
           Sign In
         </app-button>
       </form>
@@ -40,6 +40,7 @@
 import AppButton from '@/components/AppButton.vue'
 import AuthLayout from '@/components/AuthLayout.vue'
 import AppInputWithValidation from '@/components/AppInputWithValidation.vue'
+import sendRequest from '@/api/sendRequest'
 
 export default {
   name: 'SignInPage',
@@ -68,8 +69,17 @@ export default {
     }
   },
   methods: {
-    sendSigninData() {
-      console.log(this.email, this.password)
+    async sendData() {
+      const data = await sendRequest({
+        url: '/api/auth/signin',
+        method: 'post',
+        body: {
+          email: this.email,
+          password: this.password
+        }
+      })
+
+      console.log(data)
     }
   }
 }
