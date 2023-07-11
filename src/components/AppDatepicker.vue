@@ -1,11 +1,22 @@
 <template>
-  <vue-date-picker
-    v-bind="$attrs"
-    auto-apply
-    height="48"
-    hide-input-icon
-    input-class-name="app-datepicker-input"
-  ></vue-date-picker>
+  <vee-field :name="name" v-slot="{ field, errors }" v-bind="$attrs">
+    <vue-date-picker
+      v-bind="field"
+      :model-value="field.value"
+      :name="name"
+      auto-apply
+      height="48"
+      hide-input-icon
+      input-class-name="app-datepicker-input"
+    ></vue-date-picker>
+    <v-messages
+      transition="none"
+      :messages="errors"
+      :active="errors?.length > 0"
+      color="error"
+      style="opacity: 1; padding: 6px 16px 0"
+    ></v-messages>
+  </vee-field>
 </template>
 
 <script>
@@ -15,6 +26,12 @@ export default {
   name: 'AppDatepicker',
   components: {
     VueDatePicker
+  },
+  props: {
+    name: {
+      required: true,
+      type: String
+    }
   }
 }
 </script>

@@ -41,6 +41,9 @@ import AppButton from '@/components/AppButton.vue'
 import AuthLayout from '@/components/AuthLayout.vue'
 import AppInputWithValidation from '@/components/AppInputWithValidation.vue'
 import sendRequest from '@/api/sendRequest'
+import { mapStores } from 'pinia'
+import useAuthStore from '@/stores/auth'
+import { WANNA_TRACK_ACCESS_TOKEN } from '@/constants'
 
 export default {
   name: 'SignInPage',
@@ -52,6 +55,7 @@ export default {
   },
   components: { AppInputWithValidation, AuthLayout, AppButton },
   computed: {
+    ...mapStores(useAuthStore),
     signUpValidationSchema() {
       return {
         email: {
@@ -80,6 +84,12 @@ export default {
       })
 
       console.log(data)
+
+      this.authStore.accessToken = data.accessToken
+
+      localStorage.setItem(WANNA_TRACK_ACCESS_TOKEN, data.accessToken)
+
+      this.$router.push('/expenses')
     }
   }
 }

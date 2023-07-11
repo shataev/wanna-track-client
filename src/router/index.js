@@ -7,6 +7,8 @@ import SignUpPage from '@/pages/SignUpPage.vue'
 import NewExpensePage from '@/pages/NewExpensePage.vue'
 import NewIncomePage from '@/pages/NewIncomePage.vue'
 import HomeView from '@/views/HomeView.vue'
+import useAuthStore from '@/stores/auth'
+import { AUTH_ROUTES, ROUTE_NAMES } from '@/router/router.constants'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -17,12 +19,12 @@ const router = createRouter({
       children: [
         {
           path: 'expenses',
-          name: 'expenses',
+          name: ROUTE_NAMES.EXPENSES,
           component: ExpensesPage
         },
         {
           path: 'income',
-          name: 'income',
+          name: ROUTE_NAMES.INCOME,
           component: IncomePage
         }
       ]
@@ -34,25 +36,37 @@ const router = createRouter({
     },
     {
       path: '/signin',
-      name: 'signIn',
+      name: ROUTE_NAMES.SIGN_IN,
       component: SignInPage
     },
     {
       path: '/signup',
-      name: 'signUp',
+      name: ROUTE_NAMES.SIGN_UP,
       component: SignUpPage
     },
     {
       path: '/expenses/new',
-      name: 'newExpense',
+      name: ROUTE_NAMES.NEW_EXPENSE,
       component: NewExpensePage
     },
     {
       path: '/new-income',
-      name: 'newIncome',
+      name: ROUTE_NAMES.NEW_INCOME,
       component: NewIncomePage
     }
   ]
+})
+
+router.beforeEach((to, from) => {
+  const authStore = useAuthStore()
+
+  const isAuthenticated = Boolean(authStore.accessToken)
+
+  if (!isAuthenticated && !AUTH_ROUTES.includes(to.name)) {
+    return { name: ROUTE_NAMES.SIGN_IN }
+  }
+
+  return true
 })
 
 export default router

@@ -5,6 +5,9 @@
       :name="name"
       v-bind="field"
       class="mb-3"
+      :variant="variant"
+      :bg-color="bgColor"
+      :class="className"
       :placeholder="placeholder"
       :error-messages="errors"
     ></app-input>
@@ -30,6 +33,16 @@ export default {
     type: {
       type: String,
       default: 'text'
+    },
+    variant: {
+      type: String
+    },
+    bgColor: {
+      type: String
+      //default: 'app-light'
+    },
+    className: {
+      type: String
     }
   }
 }

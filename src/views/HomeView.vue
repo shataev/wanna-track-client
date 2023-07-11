@@ -38,6 +38,8 @@
 </template>
 
 <script>
+import { ROUTE_NAMES } from '@/router/router.constants'
+
 export default {
   name: 'HomeView',
   data() {
@@ -50,7 +52,7 @@ export default {
       return this.tab === value ? 'bg-app-yellow-lighter' : 'bg-transparent'
     },
     goToAddItem() {
-      this.$router.push({ name: 'newExpense' })
+      this.$router.push({ name: ROUTE_NAMES.NEW_EXPENSE })
     }
   }
 }

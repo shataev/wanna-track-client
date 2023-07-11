@@ -13,41 +13,48 @@
     <h1 class="flex-grow-1 text-center text-app-light title">Add Expense</h1>
     <LogoIcon></LogoIcon>
   </header>
-  <v-form>
-    <div class="form-element-wrapper mb-4">
-      <label for="amount" class="form-label text-app-light d-flex mb-1">Amount</label>
-      <v-text-field
-        type="number"
-        placeholder="Enter amount"
-        name="amount"
-        v-model="amount"
-        class="form-element form-element-input bg-transparent text-app-light"
-        variant="outlined"
-        hide-details="auto"
-      ></v-text-field>
-    </div>
-    <div class="form-element-wrapper mb-4">
-      <label for="categories" class="form-label text-app-light d-flex mb-1">Category</label>
-      <category-buttons :categories="categories" v-model="category" />
-    </div>
-    <div class="form-element-wrapper mb-4">
-      <label for="date" class="form-label text-app-light d-flex mb-1">Date</label>
-      <app-datepicker v-model="date"></app-datepicker>
-    </div>
-    <div class="form-element-wrapper mb-4">
-      <label for="comment" class="form-label text-app-light d-flex mb-1">Comment</label>
-      <v-textarea
-        type="text"
-        placeholder="Enter comments"
-        name="comment"
-        class="form-element form-element-textarea bg-transparent text-app-light"
-        variant="outlined"
-        rows="3"
-        hide-details="auto"
-      ></v-textarea>
-    </div>
-  </v-form>
-  <app-button class="mt-12">Save</app-button>
+  <vee-form :validation-schema="validationSchema" @submit.prevent="submit">
+    <v-form>
+      <div class="form-element-wrapper mb-4">
+        <label for="amount" class="form-label text-app-light d-flex mb-1">Amount</label>
+        <app-input-with-validation
+          type="number"
+          placeholder="Enter amount"
+          name="amount"
+          v-model="amount"
+          bg-color="transparent"
+          class-name="form-element form-element-input text-app-light"
+          variant="outlined"
+          hide-details="auto"
+        ></app-input-with-validation>
+      </div>
+      <div class="form-element-wrapper mb-4">
+        <label for="categories" class="form-label text-app-light d-flex mb-1">Category</label>
+        <category-buttons :categories="categories" v-model="category" />
+      </div>
+      <div class="form-element-wrapper mb-4">
+        <label for="date" class="form-label text-app-light d-flex mb-1">Date</label>
+        <app-datepicker v-model="date" name="date"></app-datepicker>
+      </div>
+      <div class="form-element-wrapper mb-4">
+        <label for="comment" class="form-label text-app-light d-flex mb-1">Comment</label>
+        <vee-field name="comment" v-slot="{ field, errors }" v-bind="$attrs">
+          <v-textarea
+            type="text"
+            placeholder="Enter comments"
+            v-bind="field"
+            name="comment"
+            class="form-element form-element-textarea bg-transparent text-app-light"
+            variant="outlined"
+            rows="3"
+            hide-details="auto"
+            :error-messages="errors"
+          ></v-textarea>
+        </vee-field>
+      </div>
+    </v-form>
+    <app-button class="mt-12" type="submit">Save</app-button>
+  </vee-form>
 </template>
 
 <script>
@@ -55,8 +62,9 @@ import LogoIcon from '@/components/icons/LogoIcon.vue'
 import CategoryButtons from '@/components/CategoryButtons.vue'
 import AppDatepicker from '@/components/AppDatepicker.vue'
 import AppButton from '@/components/AppButton.vue'
+import AppInputWithValidation from '@/components/AppInputWithValidation.vue'
 
-// TODO: change on real data
+// TODO: change with real data
 const categories = [
   {
     name: 'Shopping',
@@ -133,13 +141,29 @@ export default {
       amount: null,
       categories,
       category: null,
-      date: new Date()
+      date: new Date(),
+      comment: '',
+      validationSchema: {
+        amount: 'required|min_expense_value:1',
+        category: 'required',
+        date: 'required',
+        comment: 'min:3|max:200'
+      }
     }
   },
-  components: { AppDatepicker, CategoryButtons, LogoIcon, AppButton },
+  components: {
+    AppInputWithValidation,
+    AppDatepicker,
+    CategoryButtons,
+    LogoIcon,
+    AppButton
+  },
   methods: {
     goBack() {
       this.$router.back()
+    },
+    submit(values) {
+      console.log(values)
     }
   }
 }
@@ -172,7 +196,6 @@ $border-raduis-text-field: 999px;
     padding-top: 9px;
     padding-bottom: 9px;
     min-height: 48px;
-    color: #f6fdeb;
     font-size: 18px;
   }
   /*
@@ -189,10 +212,5 @@ $border-raduis-text-field: 999px;
       border: none !important;
     }
   }
-}
-
-.form-element-radio-group {
-  border: 1px solid #f6fdeb;
-  border-radius: 26px !important;
 }
 </style>

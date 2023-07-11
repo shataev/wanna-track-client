@@ -17,23 +17,27 @@
           name="name"
           v-model="name"
           placeholder="Name"
+          class-name="text-app-dark"
         ></app-input-with-validation>
         <app-input-with-validation
           name="email"
           v-model="email"
           placeholder="Email"
+          class-name="text-app-dark"
         ></app-input-with-validation>
         <app-input-with-validation
           type="password"
           name="password"
           v-model="password"
           placeholder="Password"
+          class-name="text-app-dark"
         ></app-input-with-validation>
         <app-input-with-validation
           type="password"
           name="confirmPassword"
           v-model="confirmPassword"
           placeholder="ConfirmPassword"
+          class-name="text-app-dark"
         ></app-input-with-validation>
 
         <app-button class="mt-12" @click="sendData" :disabled="!(touched && valid)">
@@ -49,6 +53,9 @@ import AppButton from '@/components/AppButton.vue'
 import AuthLayout from '@/components/AuthLayout.vue'
 import AppInputWithValidation from '@/components/AppInputWithValidation.vue'
 import sendRequest from '@/api/sendRequest'
+import { mapStores } from 'pinia'
+import useAuthStore from '@/stores/auth'
+import { WANNA_TRACK_ACCESS_TOKEN } from '@/constants'
 
 export default {
   name: 'SignUpPage',
@@ -61,6 +68,7 @@ export default {
     }
   },
   computed: {
+    ...mapStores(useAuthStore),
     signUpValidationSchema() {
       return {
         name: {
@@ -102,6 +110,12 @@ export default {
       })
 
       console.log(data)
+
+      this.authStore.accessToken = data.accessToken
+
+      localStorage.setItem(WANNA_TRACK_ACCESS_TOKEN, data.accessToken)
+
+      this.$router.push('/expenses')
     }
   }
 }
