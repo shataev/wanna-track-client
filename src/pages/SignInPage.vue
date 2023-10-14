@@ -74,6 +74,7 @@ export default {
   },
   methods: {
     async sendData() {
+      // TODO: add error handling and notificatios
       const data = await sendRequest({
         url: '/api/auth/signin',
         method: 'post',
@@ -82,8 +83,6 @@ export default {
           password: this.password
         }
       })
-
-      console.log(data)
 
       this.authStore.accessToken = data.accessToken
 

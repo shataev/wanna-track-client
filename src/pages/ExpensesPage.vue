@@ -50,6 +50,7 @@
 import { Doughnut } from 'vue-chartjs'
 import { Chart as ChartJS, ArcElement } from 'chart.js'
 import AppValueButton from '@/components/AppValueButton.vue'
+import sendRequest from '@/api/sendRequest'
 
 ChartJS.register(ArcElement)
 

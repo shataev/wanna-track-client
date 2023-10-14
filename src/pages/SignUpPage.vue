@@ -97,6 +97,7 @@ export default {
   components: { AppInputWithValidation, AuthLayout, AppButton },
   methods: {
     async sendData(event) {
+      // TODO: add error handling and notificatios
       event.preventDefault()
 
       const data = await sendRequest({
@@ -108,8 +109,6 @@ export default {
           password: this.password
         }
       })
-
-      console.log(data)
 
       this.authStore.accessToken = data.accessToken
 

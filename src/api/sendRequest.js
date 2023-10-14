@@ -1,21 +1,32 @@
-export default async function (requestConfig) {
-  try {
-    const { url, headers, body, method = 'GET' } = requestConfig
-    const requestUrl = `${import.meta.env.VITE_BASE_URL}${url}`
+import axios from 'axios'
 
-    const response = await fetch(requestUrl, {
+const axiosInstance = axios.create({
+  baseURL: import.meta.env.VITE_BASE_URL,
+  headers: {
+    'Content-Type': 'application/json',
+    'X-Verification-Code': import.meta.env.VITE_VERIFICATION_CODE
+  },
+  withCredentials: true
+})
+export default async function (requestConfig) {
+  const { url, headers, body, method = 'GET', onUnauthorizedHandler } = requestConfig
+  const requestUrl = `${import.meta.env.VITE_BASE_URL}${url}`
+
+  try {
+    const response = await axiosInstance(requestUrl, {
       method,
-      body: JSON.stringify(body),
+      data: JSON.stringify(body),
       headers: {
-        'Content-Type': 'application/json',
         ...headers
       }
     })
 
-    const data = response.json()
-
-    return data
+    return response.data
   } catch (e) {
-    console.log(e)
+    console.log('[error]', e)
+
+    if (e.response?.status === 401) {
+      return onUnauthorizedHandler?.()
+    }
   }
 }
