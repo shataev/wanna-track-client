@@ -1,15 +1,29 @@
 <template>
   <header class="d-flex mb-6">
+    <v-btn
+      @click="logout"
+      class="bg-app-yellow-lighter"
+      color="app-green-lighter"
+      icon
+      variant="tonal"
+      height="37"
+      width="37"
+      elevation="0"
+    >
+      <v-icon class="logout-icon"> mdi-logout </v-icon>
+    </v-btn>
     <h1 class="flex-grow-1 text-center text-app-light title">Home</h1>
     <v-btn
-      icon="$plus"
+      icon
       @click="goToAddItem"
       variant="tonal"
       class="bg-app-yellow-lighter"
       height="37"
       width="37"
       color="app-green-lighter"
-    ></v-btn>
+    >
+      <v-icon> mdi-plus </v-icon>
+    </v-btn>
   </header>
   <v-btn-toggle
     class="text-none app-tabs bg-app-green-lighter mb-6"
@@ -39,6 +53,10 @@
 
 <script>
 import { ROUTE_NAMES } from '@/router/router.constants'
+import sendRequest from '@/api/sendRequest'
+import { WANNA_TRACK_ACCESS_TOKEN } from '@/constants'
+import useAuthStore from '@/stores/auth'
+import { mapStores } from 'pinia'
 
 export default {
   name: 'HomeView',
@@ -47,12 +65,31 @@ export default {
       tab: 'expenses'
     }
   },
+  computed: {
+    ...mapStores(useAuthStore)
+  },
   methods: {
     tabClass(value) {
       return this.tab === value ? 'bg-app-yellow-lighter' : 'bg-transparent'
     },
     goToAddItem() {
       this.$router.push({ name: ROUTE_NAMES.NEW_EXPENSE })
+    },
+    async logout() {
+      await sendRequest({
+        url: '/api/auth/signout',
+        method: 'post',
+        body: {
+          email: this.email,
+          password: this.password
+        }
+      })
+
+      this.authStore.accessToken = null
+
+      localStorage.removeItem(WANNA_TRACK_ACCESS_TOKEN)
+
+      this.$router.push('/')
     }
   }
 }
@@ -62,6 +99,10 @@ export default {
 .title {
   font-size: 30px;
   font-weight: 400;
+}
+
+.logout-icon {
+  transform: rotateZ(180deg) translateX(2px);
 }
 
 .app-tabs {
