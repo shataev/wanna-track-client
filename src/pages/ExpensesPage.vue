@@ -51,6 +51,8 @@ import { Doughnut } from 'vue-chartjs'
 import { Chart as ChartJS, ArcElement } from 'chart.js'
 import AppValueButton from '@/components/AppValueButton.vue'
 import sendRequest from '@/api/sendRequest'
+import useUserStore from '@/stores/user'
+import { mapStores } from 'pinia'
 
 ChartJS.register(ArcElement)
 
@@ -76,39 +78,12 @@ const centerText = {
   }
 }
 
-// TODO: change on real data
-const expenses = [
-  {
-    name: 'Restaurants',
-    value: 225,
-    color: '#E1D165',
-    icon: 'mdi-noodles'
-  },
-  {
-    name: 'Shopping',
-    value: 150,
-    color: '#CAE39D',
-    icon: 'mdi-cart'
-  },
-  {
-    name: 'House',
-    value: 75,
-    color: '#FFDA4C',
-    icon: 'mdi-home'
-  },
-  {
-    name: 'Petrol',
-    value: 75,
-    color: '#A7C76C',
-    icon: 'mdi-gas-station'
-  }
-]
 export default {
   name: 'ExpensesPage',
   components: { AppValueButton, Doughnut },
   data() {
     return {
-      expenses: [...expenses],
+      expenses: [],
       currentFilter: 'day',
       dateFilters: [
         {
@@ -141,6 +116,7 @@ export default {
     }
   },
   computed: {
+    ...mapStores(useUserStore),
     total() {
       return this.expenses.reduce((acc, expense) => acc + expense.value, 0)
     },
@@ -166,6 +142,17 @@ export default {
     chartTitle() {
       return this.dateFilters.find((filter) => filter.value === this.currentFilter).text
     }
+  },
+  async mounted() {
+    const expenses = await sendRequest({
+      url: '/api/costs',
+      method: 'get',
+      params: {
+        userId: this.userStore.user.id
+      }
+    })
+
+    this.expenses = expenses
   }
 }
 </script>
