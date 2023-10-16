@@ -35,12 +35,12 @@
   <div class="values">
     <app-value-button
       v-for="expense in expenses"
-      :key="expense.name"
+      :key="expense.category"
       :icon="expense.icon"
-      :name="expense.name"
-      :value="expense.value"
+      :name="expense.category"
+      :value="expense.amount"
       :color="expense.color"
-      :progress="expense.value / total"
+      :progress="expense.amount / total"
     >
     </app-value-button>
   </div>
@@ -118,23 +118,22 @@ export default {
   computed: {
     ...mapStores(useUserStore),
     total() {
-      return this.expenses.reduce((acc, expense) => acc + expense.value, 0)
+      return this.expenses.reduce((acc, expense) => acc + expense.amount, 0)
     },
     chartData() {
       const result = {
         labels: [],
         datasets: [
           {
-            backgroundColor: [],
+            backgroundColor: [], //TODO: fill this Array with colors constants
             data: []
           }
         ]
       }
 
       this.expenses.map((expense) => {
-        result.labels.push(expense.name)
-        result.datasets[0].backgroundColor.push(expense.color)
-        result.datasets[0].data.push(expense.value)
+        result.labels.push(expense.category)
+        result.datasets[0].data.push(expense.amount)
       })
 
       return result
@@ -143,7 +142,7 @@ export default {
       return this.dateFilters.find((filter) => filter.value === this.currentFilter).text
     }
   },
-  async mounted() {
+  async beforeMount() {
     const expenses = await sendRequest({
       url: '/api/costs',
       method: 'get',

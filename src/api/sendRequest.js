@@ -9,7 +9,7 @@ const axiosInstance = axios.create({
   withCredentials: true
 })
 export default async function (requestConfig) {
-  const { url, headers, body, method = 'GET', onUnauthorizedHandler } = requestConfig
+  const { url, headers, body, method = 'GET', onUnauthorizedHandler, params } = requestConfig
   const requestUrl = `${import.meta.env.VITE_BASE_URL}${url}`
 
   try {
@@ -18,7 +18,8 @@ export default async function (requestConfig) {
       data: JSON.stringify(body),
       headers: {
         ...headers
-      }
+      },
+      params
     })
 
     return response.data

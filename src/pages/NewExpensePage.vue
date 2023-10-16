@@ -13,7 +13,7 @@
     <h1 class="flex-grow-1 text-center text-app-light title">Add Expense</h1>
     <LogoIcon></LogoIcon>
   </header>
-  <vee-form :validation-schema="validationSchema" @submit.prevent="submit">
+  <vee-form :validation-schema="validationSchema" @submit="submit">
     <v-form>
       <div class="form-element-wrapper mb-4">
         <label for="amount" class="form-label text-app-light d-flex mb-1">Amount</label>
@@ -63,9 +63,12 @@ import CategoryButtons from '@/components/CategoryButtons.vue'
 import AppDatepicker from '@/components/AppDatepicker.vue'
 import AppButton from '@/components/AppButton.vue'
 import AppInputWithValidation from '@/components/AppInputWithValidation.vue'
+import sendRequest from '@/api/sendRequest'
+import useUserStore from '@/stores/user'
+import { mapStores } from 'pinia'
 
 // TODO: change with real data
-const categories = [
+/*const categories = [
   {
     name: 'Shopping',
     value: 2,
@@ -132,14 +135,14 @@ const categories = [
     color: '#FFDA4C',
     icon: 'mdi-car'
   }
-]
+]*/
 
 export default {
   name: 'NewExpensePage',
   data() {
     return {
+      categories: [],
       amount: null,
-      categories,
       category: null,
       date: new Date(),
       comment: '',
@@ -158,13 +161,36 @@ export default {
     LogoIcon,
     AppButton
   },
+  computed: {
+    ...mapStores(useUserStore)
+  },
   methods: {
     goBack() {
       this.$router.back()
     },
-    submit(values) {
-      console.log(values)
+    async submit(values) {
+      const { amount, category, date, comment } = values
+
+      await sendRequest({
+        url: '/api/cost',
+        method: 'post',
+        body: {
+          userId: this.userStore.user.id,
+          amount,
+          category,
+          date,
+          comment
+        }
+      })
     }
+  },
+  async beforeMount() {
+    const categories = await sendRequest({
+      url: '/api/category',
+      method: 'get'
+    })
+
+    this.categories = categories
   }
 }
 </script>

@@ -35,7 +35,8 @@ export default {
     },
     color: {
       type: String,
-      required: true
+      required: true,
+      default: '#333'
     },
     progress: {
       type: Number,
