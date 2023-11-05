@@ -143,6 +143,10 @@ export default {
     }
   },
   async beforeMount() {
+    if (!this.userStore.user.id) {
+      return
+    }
+
     const expenses = await sendRequest({
       url: '/api/costs',
       method: 'get',
