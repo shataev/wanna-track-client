@@ -3,7 +3,7 @@
     variant="outlined"
     rounded="pill"
     color="app-light"
-    class="value-button text-none w-100 px-7 justify-space-between mb-2 position-relative"
+    class="value-button text-none w-100 px-7 justify-space-between mb-2 position-relative overflow-hidden"
     height="56"
   >
     <div class="progress-layout" :style="progressLayoutStyles"></div>
@@ -12,7 +12,7 @@
       <span class="name">{{ name }}</span>
     </template>
     <template #append>
-      <span class="value">$ {{ value }}</span>
+      <span class="value">&#xE3F; {{ value }}</span>
     </template>
   </v-btn>
 </template>
