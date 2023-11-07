@@ -12,7 +12,7 @@
       <span class="name">{{ name }}</span>
     </template>
     <template #append>
-      <span class="value">&#xE3F; {{ value }}</span>
+      <span class="value">{{ value }} &#xE3F;</span>
     </template>
   </v-btn>
 </template>
@@ -70,6 +70,7 @@ export default {
   top: 1px;
   bottom: 1px;
   left: 1px;
+  min-width: 52px;
   border-radius: 28px;
   z-index: 0;
 }

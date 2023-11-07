@@ -34,12 +34,12 @@
   </div>
   <div class="values">
     <app-value-button
-      v-for="expense in expenses"
+      v-for="(expense, index) in expenses"
       :key="expense.category"
       :icon="expense.icon"
       :name="expense.category"
       :value="expense.amount"
-      :color="expense.color"
+      :color="expense.color || getButtonBackgroundColor(index)"
       :progress="expense.amount / total"
     >
     </app-value-button>
@@ -53,6 +53,7 @@ import AppValueButton from '@/components/AppValueButton.vue'
 import sendRequest from '@/api/sendRequest'
 import useUserStore from '@/stores/user'
 import { mapStores } from 'pinia'
+import { BUTTON_BACKGROUND_COLORS } from '@/constants/colors.constants'
 
 ChartJS.register(ArcElement)
 
@@ -74,12 +75,17 @@ const centerText = {
     ctx.font = `bold ${fontSize}px Roboto`
     ctx.fillStyle = '#F6FDEB'
     ctx.textAlign = 'center'
-    ctx.fillText(`${totalValue}$`, width / 2, (height + top + fontSize) / 2)
+    ctx.fillText(`${totalValue} \u0E3F`, width / 2, (height + top + fontSize) / 2)
   }
 }
 
 export default {
   name: 'ExpensesPage',
+  methods: {
+    getButtonBackgroundColor(index) {
+      return BUTTON_BACKGROUND_COLORS[index]
+    }
+  },
   components: { AppValueButton, Doughnut },
   data() {
     return {
@@ -125,7 +131,7 @@ export default {
         labels: [],
         datasets: [
           {
-            backgroundColor: [], //TODO: fill this Array with colors constants
+            backgroundColor: BUTTON_BACKGROUND_COLORS, //TODO: fill this Array with colors constants
             data: []
           }
         ]
