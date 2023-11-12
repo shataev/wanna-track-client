@@ -1,6 +1,6 @@
 # build stage
 FROM node:latest as build-stage
-RUN npm install -g yarn
+RUN apt-get update -qq && apt-get install -y yarn
 WORKDIR /app
 COPY package*.json ./
 RUN yarn install
