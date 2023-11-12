@@ -8,10 +8,6 @@ export const getUserByAccessTokenFromLocalStorage = async () => {
     return null
   }
 
-  if (!accessToken) {
-    return
-  }
-
   const user = await sendRequest({
     url: '/api/auth/',
     method: 'get',
@@ -21,6 +17,21 @@ export const getUserByAccessTokenFromLocalStorage = async () => {
     // TODO make it common to all requests
     onUnauthorizedHandler() {
       localStorage.removeItem(WANNA_TRACK_ACCESS_TOKEN)
+    }
+  })
+
+  return user
+}
+export const checkAuth = async (accessToken) => {
+  if (!accessToken) {
+    return false
+  }
+
+  const user = await sendRequest({
+    url: '/api/auth/',
+    method: 'get',
+    headers: {
+      Authorization: `Bearer ${accessToken}`
     }
   })
 

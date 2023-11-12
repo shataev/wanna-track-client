@@ -9,6 +9,10 @@ import NewIncomePage from '@/pages/NewIncomePage.vue'
 import HomeView from '@/views/HomeView.vue'
 import useAuthStore from '@/stores/auth'
 import { AUTH_ROUTES, ROUTE_NAMES } from '@/router/router.constants'
+import { WANNA_TRACK_ACCESS_TOKEN } from '@/constants'
+
+import useUserStore from '@/stores/user'
+import { checkAuth } from '@/utils/auth.utils'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -57,13 +61,23 @@ const router = createRouter({
   ]
 })
 
-router.beforeEach((to, from) => {
+router.beforeEach(async (to, from) => {
   const authStore = useAuthStore()
+  const userStore = useUserStore()
 
-  const isAuthenticated = Boolean(authStore.accessToken)
+  const accessToken = localStorage.getItem(WANNA_TRACK_ACCESS_TOKEN)
 
-  if (!isAuthenticated && !AUTH_ROUTES.includes(to.name)) {
+  const user = await checkAuth(accessToken)
+
+  if (!user && !AUTH_ROUTES.includes(to.name)) {
     return { name: ROUTE_NAMES.SIGN_IN }
+  }
+
+  authStore.accessToken = user.accessToken
+  userStore.user = {
+    email: user.email,
+    id: user.id,
+    username: user.username
   }
 
   return true
