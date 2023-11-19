@@ -1,11 +1,8 @@
 # build stage
-FROM node:latest as build-stage
-RUN curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | gpg --dearmor |  tee /etc/apt/trusted.gpg.d/yarn.gpg
-RUN echo "deb [signed-by=/etc/apt/trusted.gpg.d/yarn.gpg] https://dl.yarnpkg.com/debian/ stable main" | tee /etc/apt/sources.list.d/yarn.list
-RUN apt update
-RUN apt install yarn
+FROM node:18.16.0-alpine as build-stage
 WORKDIR /app
 COPY package*.json ./
+RUN npm install -g --force yarn
 RUN yarn install
 COPY . .
 RUN yarn build
