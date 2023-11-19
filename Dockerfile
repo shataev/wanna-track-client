@@ -1,6 +1,6 @@
 # build stage
 FROM node:18.16.0-alpine as build-stage
-ENV VITE_BASE_URL=${VITE_BASE_URL}
+ARG VITE_BASE_URL=${VITE_BASE_URL}
 ARG VITE_VERIFICATION_CODE=${VITE_VERIFICATION_CODE}
 WORKDIR /app
 COPY package*.json ./
