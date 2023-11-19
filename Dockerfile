@@ -1,5 +1,8 @@
 # build stage
 FROM node:18.16.0-alpine as build-stage
+ENV VITE_BASE_URL=${VITE_BASE_URL}
+ENV VITE_VERIFICATION_CODE=${VITE_VERIFICATION_CODE}
+RUN echo "The VITE_BASE_URL variable value is $VITE_BASE_URL"
 WORKDIR /app
 COPY package*.json ./
 RUN npm install -g --force yarn
