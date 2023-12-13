@@ -38,7 +38,7 @@
 
 <script>
 import AppButton from '@/components/AppButton.vue'
-import AuthLayout from '@/components/AuthLayout.vue'
+import AuthLayout from '@/layouts/AuthLayout.vue'
 import AppInputWithValidation from '@/components/AppInputWithValidation.vue'
 import sendRequest from '@/api/sendRequest'
 import { mapStores } from 'pinia'

@@ -9,46 +9,24 @@
     </div>
 
     <slot />
-    <footer class="page-footer text-app-light text-center">
-      {{ footerText }}
-      <router-link :to="footerLinkURL" class="auth-link text-decoration-none text-app-link">
-        {{ footerLinkText }}
-      </router-link>
-    </footer>
+
+    <slot name="footer" />
   </div>
 </template>
 
 <script>
-import AppButton from '@/components/AppButton.vue'
-import AppInput from '@/components/AppInput.vue'
-
 export default {
-  name: 'AuthLayout',
-  components: { AppInput, AppButton },
+  name: 'OuterPageLayout',
   props: {
     title: {
       type: String,
       required: true
     },
     subtitle: {
-      type: String,
-      required: true
+      type: String
     },
     subtitleDescription: {
-      type: String,
-      required: true
-    },
-    footerText: {
-      type: String,
-      required: true
-    },
-    footerLinkText: {
-      type: String,
-      required: true
-    },
-    footerLinkURL: {
-      type: String,
-      required: true
+      type: String
     }
   }
 }
@@ -70,9 +48,5 @@ export default {
 
 .page-subtitle-description {
   font-size: 18px;
-}
-
-.page-footer {
-  font-size: 16px;
 }
 </style>

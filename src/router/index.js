@@ -13,6 +13,7 @@ import { WANNA_TRACK_ACCESS_TOKEN } from '@/constants'
 
 import useUserStore from '@/stores/user'
 import { checkAuth } from '@/utils/auth.utils'
+import EmailVerificationPage from '@/pages/EmailVerificationPage/EmailVerificationPage.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -57,6 +58,11 @@ const router = createRouter({
       path: '/new-income',
       name: ROUTE_NAMES.NEW_INCOME,
       component: NewIncomePage
+    },
+    {
+      path: '/email-verification',
+      name: ROUTE_NAMES.EMAIL_VERIFICATION,
+      component: EmailVerificationPage
     }
   ]
 })
@@ -68,6 +74,10 @@ router.beforeEach(async (to, from) => {
   const accessToken = localStorage.getItem(WANNA_TRACK_ACCESS_TOKEN)
 
   const user = await checkAuth(accessToken)
+
+  if (to.name === ROUTE_NAMES.EMAIL_VERIFICATION) {
+    return true
+  }
 
   if (!user && !AUTH_ROUTES.includes(to.name)) {
     return { name: ROUTE_NAMES.SIGN_IN }
