@@ -53,7 +53,7 @@
         </vee-field>
       </div>
     </v-form>
-    <app-button class="mt-12" type="submit">Save</app-button>
+    <app-button class="mt-12" type="submit" :disabled="submitButtonDisabled">Save</app-button>
   </vee-form>
 </template>
 
@@ -66,76 +66,6 @@ import AppInputWithValidation from '@/components/AppInputWithValidation.vue'
 import sendRequest from '@/api/sendRequest'
 import useUserStore from '@/stores/user'
 import { mapStores } from 'pinia'
-
-// TODO: change with real data
-/*const categories = [
-  {
-    name: 'Shopping',
-    value: 2,
-    color: '#CAE39D',
-    icon: 'mdi-cart'
-  },
-  {
-    name: 'Restaurants',
-    value: 1,
-    color: '#E1D165',
-    icon: 'mdi-noodles'
-  },
-  {
-    name: 'Leisure',
-    value: 41,
-    color: '#A7C76C',
-    icon: 'mdi-controller'
-  },
-  {
-    name: 'Clothes',
-    value: 42,
-    color: '#A7C76C',
-    icon: 'mdi-tshirt-crew'
-  },
-  {
-    name: 'Travel',
-    value: 52,
-    color: '#A7C76C',
-    icon: 'mdi-wallet-travel'
-  },
-  {
-    name: 'Internet',
-    value: 53,
-    color: '#A7C76C',
-    icon: 'mdi-web'
-  },
-  {
-    name: 'Mobile',
-    value: 54,
-    color: '#A7C76C',
-    icon: 'mdi-cellphone'
-  },
-  {
-    name: 'House',
-    value: 3,
-    color: '#FFDA4C',
-    icon: 'mdi-home'
-  },
-  {
-    name: 'Petrol',
-    value: 4,
-    color: '#A7C76C',
-    icon: 'mdi-gas-station'
-  },
-  {
-    name: 'Pets',
-    value: 5,
-    color: '#CAE39D',
-    icon: 'mdi-paw'
-  },
-  {
-    name: 'Service',
-    value: 6,
-    color: '#FFDA4C',
-    icon: 'mdi-car'
-  }
-]*/
 
 export default {
   name: 'NewExpensePage',
@@ -151,6 +81,9 @@ export default {
         category: 'required',
         date: 'required',
         comment: 'min:3|max:200'
+      },
+      request: {
+        pending: false
       }
     }
   },
@@ -162,7 +95,10 @@ export default {
     AppButton
   },
   computed: {
-    ...mapStores(useUserStore)
+    ...mapStores(useUserStore),
+    submitButtonDisabled() {
+      return this.request.pending
+    }
   },
   methods: {
     goBack() {
@@ -170,6 +106,8 @@ export default {
     },
     async submit(values) {
       const { amount, category, date, comment } = values
+
+      this.request.pending = true
 
       await sendRequest({
         url: '/api/cost',
@@ -182,6 +120,8 @@ export default {
           comment
         }
       })
+
+      this.request.pending = false
     }
   },
   async beforeMount() {
