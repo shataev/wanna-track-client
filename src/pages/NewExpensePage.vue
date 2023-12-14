@@ -1,4 +1,15 @@
 <template>
+  <v-alert
+    v-model="alert.isVisible"
+    close-text="Close Alert"
+    class="alert"
+    closable
+    :type="alert.type"
+    density="compact"
+    position="fixed"
+  >
+    {{ alert.text }}
+  </v-alert>
   <header class="d-flex mb-6 align-center">
     <v-btn
       icon="mdi-chevron-left"
@@ -53,7 +64,7 @@
         </vee-field>
       </div>
     </v-form>
-    <app-button class="mt-12" type="submit" :disabled="submitButtonDisabled">Save</app-button>
+    <app-button class="mt-12" type="submit" :loading="request.pending">Save</app-button>
   </vee-form>
 </template>
 
@@ -67,10 +78,19 @@ import sendRequest from '@/api/sendRequest'
 import useUserStore from '@/stores/user'
 import { mapStores } from 'pinia'
 
+const ALERT_INITIAL_STATE = {
+  type: 'success',
+  text: '',
+  isVisible: false
+}
+
 export default {
   name: 'NewExpensePage',
   data() {
     return {
+      alert: {
+        ...ALERT_INITIAL_STATE
+      },
       categories: [],
       amount: null,
       category: null,
@@ -104,7 +124,7 @@ export default {
     goBack() {
       this.$router.back()
     },
-    async submit(values) {
+    async submit(values, { resetForm }) {
       const { amount, category, date, comment } = values
 
       this.request.pending = true
@@ -121,7 +141,15 @@ export default {
         }
       })
 
+      resetForm()
+
       this.request.pending = false
+      this.alert.text = 'Created!'
+      this.alert.isVisible = true
+
+      setTimeout(() => {
+        this.alert = { ...ALERT_INITIAL_STATE }
+      }, 3000)
     }
   },
   async beforeMount() {
@@ -178,5 +206,13 @@ $border-raduis-text-field: 999px;
       border: none !important;
     }
   }
+}
+
+.alert {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 10;
 }
 </style>
