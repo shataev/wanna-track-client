@@ -27,13 +27,19 @@ export const checkAuth = async (accessToken) => {
     return false
   }
 
-  const user = await sendRequest({
-    url: '/api/auth/',
-    method: 'get',
-    headers: {
-      Authorization: `Bearer ${accessToken}`
-    }
-  })
+  let user = null
+
+  try {
+    user = await sendRequest({
+      url: '/api/auth/',
+      method: 'get',
+      headers: {
+        Authorization: `Bearer ${accessToken}`
+      }
+    })
+  } catch (e) {
+    console.warn('[checkAuth] error', e)
+  }
 
   return user
 }

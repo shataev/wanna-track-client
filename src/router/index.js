@@ -83,11 +83,13 @@ router.beforeEach(async (to, from) => {
     return { name: ROUTE_NAMES.SIGN_IN }
   }
 
-  authStore.accessToken = user.accessToken
-  userStore.user = {
-    email: user.email,
-    id: user.id,
-    username: user.username
+  if (user) {
+    authStore.accessToken = user.accessToken
+    userStore.user = {
+      email: user.email,
+      id: user.id,
+      username: user.username
+    }
   }
 
   return true

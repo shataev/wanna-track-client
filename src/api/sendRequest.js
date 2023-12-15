@@ -9,25 +9,17 @@ const axiosInstance = axios.create({
   withCredentials: true
 })
 export default async function (requestConfig) {
-  const { url, headers, body, method = 'GET', onUnauthorizedHandler, params } = requestConfig
+  const { url, headers, body, method = 'GET', params } = requestConfig
   const requestUrl = `${import.meta.env.VITE_BASE_URL}${url}`
 
-  try {
-    const response = await axiosInstance(requestUrl, {
-      method,
-      data: JSON.stringify(body),
-      headers: {
-        ...headers
-      },
-      params
-    })
+  const response = await axiosInstance(requestUrl, {
+    method,
+    data: JSON.stringify(body),
+    headers: {
+      ...headers
+    },
+    params
+  })
 
-    return response.data
-  } catch (e) {
-    console.log('[error]', e)
-
-    if (e.response?.status === 401) {
-      return onUnauthorizedHandler?.()
-    }
-  }
+  return response.data
 }
