@@ -21,7 +21,7 @@
           placeholder="Email"
         ></app-input-with-validation>
         <app-input-with-validation
-          type="text"
+          type="password"
           name="password"
           v-model="password"
           class="mb-3"

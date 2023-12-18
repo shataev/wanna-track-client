@@ -1,6 +1,18 @@
 <template>
   <vee-field :name="name" v-slot="{ field, errors }" v-bind="$attrs">
+    <app-input-password
+      v-if="type === 'password'"
+      :name="name"
+      v-bind="field"
+      class="mb-3"
+      :variant="variant"
+      :bg-color="bgColor"
+      :class="className"
+      :placeholder="placeholder"
+      :error-messages="errors"
+    />
     <app-input
+      v-else
       :type="type"
       :name="name"
       v-bind="field"
@@ -16,10 +28,12 @@
 
 <script>
 import AppInput from '@/components/AppInput.vue'
+import AppInputPassword from '@/components/AppInputPassword.vue'
 
 export default {
   name: 'AppInputWithValidation',
   components: {
+    AppInputPassword,
     AppInput
   },
   props: {
