@@ -1,7 +1,6 @@
 <template>
   <v-date-picker
     width="100%"
-    theme="dark"
     :value="value"
     @update:modelValue="onChange"
     multiple
@@ -35,9 +34,15 @@ export default {
 
 <style scoped lang="scss">
 .v-picker {
+  color: white;
   background: rgb(164 178 119 / 60%);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px); // Safari support
+}
+
+:deep(.v-btn__overlay),
+:deep(.v-btn__underlay) {
+  background: transparent;
 }
 
 :deep(.v-picker-title) {

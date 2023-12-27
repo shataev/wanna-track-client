@@ -162,8 +162,7 @@ export default {
       this.$router.back()
     },
     async submit(values, { resetForm }) {
-      const { amount, category, date: dateString, comment } = values
-      const date = new Date(dateString)
+      const { amount, category, comment } = values
 
       this.request.pending = true
 
@@ -174,7 +173,7 @@ export default {
           userId: this.userStore.user.id,
           amount,
           category,
-          date,
+          date: this.date,
           comment
         }
       })
