@@ -39,14 +39,14 @@
       :class="tabClass('expenses')"
       >Expenses</v-btn
     >
-    <v-btn
+    <!--    <v-btn
       rounded="pill"
       to="/income"
       value="income"
       class="app-tabs-button text-none text-app-dark"
       :class="tabClass('income')"
       >Income</v-btn
-    >
+    >-->
   </v-btn-toggle>
   <router-view />
 </template>
@@ -109,7 +109,9 @@ export default {
   display: flex;
 
   &-button {
-    flex-basis: 50%;
+    // TODO change when incomes will be added
+    //flex-basis: 50%;
+    flex-basis: 100%;
     font-size: 18px;
   }
 }
