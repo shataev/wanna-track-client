@@ -19,6 +19,10 @@ export default {
   props: {
     value: {
       type: Array
+    },
+    multiple: {
+      type: Boolean,
+      default: false
     }
   },
   methods: {

@@ -64,6 +64,7 @@
         :value="currentFilter.dates"
         @input="onDatepickerInput"
         @cancel="closeDatepicker"
+        multiple
       />
     </div>
   </v-dialog>

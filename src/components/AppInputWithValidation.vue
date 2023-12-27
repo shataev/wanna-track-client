@@ -14,6 +14,7 @@
     <app-input
       v-else
       :type="type"
+      @click="$attrs.onClick"
       :name="name"
       v-bind="field"
       class="mb-3"
