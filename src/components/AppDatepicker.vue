@@ -10,12 +10,8 @@
 </template>
 
 <script>
-import { VDatePicker } from 'vuetify/lib/labs/components'
 export default {
   name: 'AppDatepicker',
-  components: {
-    VDatePicker
-  },
   props: {
     value: {
       type: Array
