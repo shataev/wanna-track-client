@@ -173,7 +173,7 @@ export default {
           userId: this.userStore.user.id,
           amount,
           category,
-          date,
+          date: new Date(date),
           comment
         }
       })
