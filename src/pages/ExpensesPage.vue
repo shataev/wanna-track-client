@@ -1,27 +1,40 @@
 <template>
-  <div class="chart-container position-relative d-flex flex-column overflow-hidden mb-4">
+  <div class="chart-container position-relative d-flex flex-column mb-4">
     <div class="background-layer position-absolute"></div>
     <header class="chart-header mb-5">
       <v-btn-toggle
         class="filters flex-shrink-0 text-app-light px-10 pt-4 pb-5 justify-space-between h-auto"
         selected-class="filters-button--active"
         variant="plain"
-        v-model="currentFilter"
+        v-model="currentFilter.type"
         mandatory
       >
-        <v-btn
-          v-for="filter in dateFilters"
-          :key="filter"
-          :ripple="false"
-          class="filters-button text-none pa-0"
-          min-width="0"
-          height="20"
-          :value="filter.value"
-          >{{ filter.text }}</v-btn
-        >
+        <template v-for="filter in dateFilters" :key="filter">
+          <v-btn
+            v-if="filter.type !== 'calendar'"
+            :ripple="false"
+            class="filters-button text-none pa-0"
+            min-width="0"
+            height="20"
+            :value="filter.type"
+            @click="setFilterDatesByFilterType(filter.type)"
+            >{{ filter.text }}</v-btn
+          >
+          <v-btn
+            v-else
+            :ripple="false"
+            class="filters-button text-none pa-0"
+            min-width="0"
+            height="20"
+            :value="filter.type"
+            @click="toggleDatePicker"
+            >{{ filter.text }}</v-btn
+          >
+        </template>
       </v-btn-toggle>
       <h2 class="chart-title text-app-light text-center">{{ chartTitle }}</h2>
     </header>
+
     <div class="chart flex-shrink-1 flex-grow-0">
       <Doughnut
         id="my-chart-id"
@@ -32,6 +45,7 @@
       />
     </div>
   </div>
+
   <div class="values">
     <app-value-button
       v-for="(expense, index) in expenses"
@@ -44,6 +58,15 @@
     >
     </app-value-button>
   </div>
+  <v-dialog v-model="datepicker.isVisible" open-delay="0" close-delay="0" max-width="420">
+    <div class="date-picker w-100 rounded-xl overflow-hidden">
+      <app-datepicker
+        :value="currentFilter.dates"
+        @input="onDatepickerInput"
+        @cancel="closeDatepicker"
+      />
+    </div>
+  </v-dialog>
 </template>
 
 <script>
@@ -54,6 +77,14 @@ import sendRequest from '@/api/sendRequest'
 import useUserStore from '@/stores/user'
 import { mapStores } from 'pinia'
 import { BUTTON_BACKGROUND_COLORS } from '@/constants/colors.constants'
+import {
+  getCurrentDayRange,
+  getCurrentMonth,
+  getCurrentMonthRange,
+  getCurrentWeekRange,
+  getCurrentYearRange
+} from '@/utils/date.utils'
+import AppDatepicker from '@/components/AppDatepicker.vue'
 
 ChartJS.register(ArcElement)
 
@@ -81,36 +112,38 @@ const centerText = {
 
 export default {
   name: 'ExpensesPage',
-  methods: {
-    getButtonBackgroundColor(index) {
-      return BUTTON_BACKGROUND_COLORS[index]
-    }
-  },
-  components: { AppValueButton, Doughnut },
+  components: { AppDatepicker, AppValueButton, Doughnut },
   data() {
     return {
       expenses: [],
-      currentFilter: 'day',
+      currentFilter: {
+        type: 'month',
+        dates: []
+      },
+      datepicker: {
+        isVisible: false,
+        multiple: false
+      },
       dateFilters: [
         {
           text: 'Day',
-          value: 'day'
+          type: 'day'
         },
         {
           text: 'Week',
-          value: 'week'
+          type: 'week'
         },
         {
           text: 'Month',
-          value: 'month'
+          type: 'month'
         },
         {
           text: 'Year',
-          value: 'year'
+          type: 'year'
         },
         {
           text: 'Calendar',
-          value: 'calendar'
+          type: 'calendar'
         }
       ],
       chartOptions: {
@@ -119,6 +152,11 @@ export default {
         cutout: '60%'
       },
       chartPlugins: [centerText]
+    }
+  },
+  watch: {
+    async 'currentFilter.dates'() {
+      await this.fetchExpenses()
     }
   },
   computed: {
@@ -145,7 +183,58 @@ export default {
       return result
     },
     chartTitle() {
-      return this.dateFilters.find((filter) => filter.value === this.currentFilter).text
+      return this.dateFilters.find((filter) => filter.type === this.currentFilter.type).text
+    }
+  },
+  methods: {
+    getButtonBackgroundColor(index) {
+      return BUTTON_BACKGROUND_COLORS[index]
+    },
+    onDatepickerInput(value) {
+      this.currentFilter.dates = value
+
+      this.closeDatepicker()
+    },
+    toggleDatePicker() {
+      this.datepicker.isVisible = !this.datepicker.isVisible
+    },
+    closeDatepicker() {
+      this.datepicker.isVisible = false
+    },
+    setFilterDatesByFilterType(filterType) {
+      let dates = []
+
+      switch (filterType) {
+        case 'day':
+          dates = getCurrentDayRange()
+          break
+        case 'week':
+          dates = getCurrentWeekRange()
+          break
+        case 'year':
+          dates = getCurrentYearRange()
+          break
+        case 'month':
+          dates = getCurrentMonthRange()
+          break
+        default:
+          dates = getCurrentMonth()
+      }
+
+      this.currentFilter.dates = dates
+    },
+    async fetchExpenses() {
+      const expenses = await sendRequest({
+        url: '/api/costs',
+        method: 'get',
+        params: {
+          userId: this.userStore.user.id,
+          dateFrom: this.currentFilter.dates[0],
+          dateTo: this.currentFilter.dates[1]
+        }
+      })
+
+      this.expenses = expenses
     }
   },
   async beforeMount() {
@@ -153,15 +242,8 @@ export default {
       return
     }
 
-    const expenses = await sendRequest({
-      url: '/api/costs',
-      method: 'get',
-      params: {
-        userId: this.userStore.user.id
-      }
-    })
-
-    this.expenses = expenses
+    this.currentFilter.type = 'month'
+    this.setFilterDatesByFilterType('month')
   }
 }
 </script>
@@ -186,6 +268,10 @@ export default {
 
 .filters {
   display: flex;
+}
+
+.date-picker {
+  isolation: isolate; // hack for support border radius and overflow in Safari
 }
 
 .chart-title {
