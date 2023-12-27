@@ -41,8 +41,9 @@ export default {
 }
 
 :deep(.v-btn__overlay),
-:deep(.v-btn__underlay) {
-  background: transparent;
+:deep(.v-btn__underlay),
+:deep(.v-btn) {
+  background: transparent !important;
 }
 
 :deep(.v-picker-title) {
