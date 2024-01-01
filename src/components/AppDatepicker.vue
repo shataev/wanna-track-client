@@ -1,7 +1,7 @@
 <template>
   <v-date-picker
     width="100%"
-    :value="value"
+    :model-value="value"
     @update:modelValue="onChange"
     :multiple="multiple"
     @click:cancel="onCancel"
