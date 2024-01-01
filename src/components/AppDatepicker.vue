@@ -3,9 +3,8 @@
     width="100%"
     :value="value"
     @update:modelValue="onChange"
-    multiple
+    :multiple="multiple"
     @click:cancel="onCancel"
-    :close-on-content-click="true"
   />
 </template>
 
