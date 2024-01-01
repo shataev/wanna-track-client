@@ -58,7 +58,7 @@
     >
     </app-value-button>
   </div>
-  <v-dialog v-model="datepicker.isVisible" open-delay="0" close-delay="0" max-width="420">
+  <v-dialog :model-value="datepicker.isVisible" open-delay="0" close-delay="0" max-width="420">
     <div class="date-picker w-100 rounded-xl overflow-hidden">
       <app-datepicker
         :value="currentFilter.dates"

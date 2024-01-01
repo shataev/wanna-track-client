@@ -87,7 +87,7 @@
     <app-button class="mt-12" type="submit" :loading="request.pending">Save</app-button>
   </vee-form>
 
-  <v-dialog v-model="datePickerIsVisible" open-delay="0" close-delay="0" max-width="420">
+  <v-dialog :model-value="datePickerIsVisible" open-delay="0" close-delay="0" max-width="420">
     <div class="date-picker w-100 rounded-xl overflow-hidden">
       <app-datepicker
         :value="datePickerDates"
