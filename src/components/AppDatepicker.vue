@@ -5,8 +5,6 @@
     @update:modelValue="onChange"
     :multiple="multiple"
     @click:cancel="onCancel"
-    ok-text="Ok"
-    cancel-text="Cancel"
   />
 </template>
 
