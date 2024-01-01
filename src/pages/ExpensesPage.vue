@@ -60,12 +60,11 @@
   </div>
   <v-dialog :model-value="datepicker.isVisible" open-delay="0" close-delay="0" max-width="420">
     <div class="date-picker w-100 rounded-xl overflow-hidden">
-      <v-date-picker
-        width="100%"
-        :value="onDatepickerInput"
-        @update:modelValue="onDatepickerInput"
-        :multiple="true"
-        @click:cancel="onDatepickerInput"
+      <app-datepicker
+        :value="currentFilter.dates"
+        @input="onDatepickerInput"
+        @cancel="closeDatepicker"
+        multiple
       />
     </div>
   </v-dialog>
