@@ -58,17 +58,17 @@
     >
     </app-value-button>
   </div>
-
-  <div class="date-picker w-100 rounded-xl overflow-hidden">
-    <v-date-picker
-      v-if="datepicker.isVisible"
-      width="100%"
-      :value="onDatepickerInput"
-      @update:modelValue="onDatepickerInput"
-      :multiple="true"
-      @click:cancel="onDatepickerInput"
-    />
-  </div>
+  <v-dialog :model-value="datepicker.isVisible" open-delay="0" close-delay="0" max-width="420">
+    <div class="date-picker w-100 rounded-xl overflow-hidden">
+      <v-date-picker
+        width="100%"
+        :value="onDatepickerInput"
+        @update:modelValue="onDatepickerInput"
+        :multiple="true"
+        @click:cancel="onDatepickerInput"
+      />
+    </div>
+  </v-dialog>
 </template>
 
 <script>
