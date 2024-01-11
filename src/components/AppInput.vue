@@ -2,6 +2,7 @@
   <v-text-field
     v-bind="$attrs"
     :class="className"
+    bg-color="transparent"
     :variant="variant"
     flat
     rounded="pill"

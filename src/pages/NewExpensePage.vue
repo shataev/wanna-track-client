@@ -52,14 +52,14 @@
       <div class="form-element-wrapper mb-4">
         <label class="form-label text-app-light d-flex flex-column">
           <span class="label-text mb-1">Date</span>
-          <app-input-with-validation
+          <app-datepicker-with-validation
             name="date"
-            :model-value="formattedDate"
             class-name="form-element form-element-input text-app-light"
+            v-model="date"
+            :range="false"
             variant="outlined"
             hide-details="auto"
             bg-color="transparent"
-            @click="showDatepicker"
           />
         </label>
       </div>
@@ -86,27 +86,17 @@
 
     <app-button class="mt-12" type="submit" :loading="request.pending">Save</app-button>
   </vee-form>
-
-  <v-dialog v-model="datePickerIsVisible" open-delay="0" close-delay="0" max-width="420">
-    <div class="date-picker w-100 rounded-xl overflow-hidden">
-      <app-datepicker
-        :value="datePickerDates"
-        @input="onDatepickerInput"
-        @cancel="closeDatepicker"
-      />
-    </div>
-  </v-dialog>
 </template>
 
 <script>
 import LogoIcon from '@/components/icons/LogoIcon.vue'
 import CategoryButtons from '@/components/CategoryButtons.vue'
-import AppDatepicker from '@/components/AppDatepicker.vue'
 import AppButton from '@/components/AppButton.vue'
 import AppInputWithValidation from '@/components/AppInputWithValidation.vue'
 import sendRequest from '@/api/sendRequest'
 import useUserStore from '@/stores/user'
 import { mapStores } from 'pinia'
+import AppDatepickerWithValidation from '@/components/AppDatepickerWithValidation.vue'
 
 const ALERT_INITIAL_STATE = {
   type: 'success',
@@ -121,7 +111,6 @@ export default {
       alert: {
         ...ALERT_INITIAL_STATE
       },
-      datePickerIsVisible: false,
       categories: [],
       amount: null,
       category: null,
@@ -139,8 +128,8 @@ export default {
     }
   },
   components: {
+    AppDatepickerWithValidation,
     AppInputWithValidation,
-    AppDatepicker,
     CategoryButtons,
     LogoIcon,
     AppButton
@@ -149,12 +138,6 @@ export default {
     ...mapStores(useUserStore),
     submitButtonDisabled() {
       return this.request.pending
-    },
-    datePickerDates() {
-      return [this.date]
-    },
-    formattedDate() {
-      return this.date.toLocaleDateString()
     }
   },
   methods: {
@@ -188,15 +171,8 @@ export default {
         this.alert = { ...ALERT_INITIAL_STATE }
       }, 3000)
     },
-    showDatepicker() {
-      this.datePickerIsVisible = true
-    },
-    closeDatepicker() {
-      this.datePickerIsVisible = false
-    },
-    onDatepickerInput(value) {
-      this.closeDatepicker()
-      this.date = value[0]
+    onDateChange(newDate) {
+      this.date = newDate
     }
   },
   async beforeMount() {

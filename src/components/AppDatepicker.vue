@@ -1,55 +1,81 @@
 <template>
-  <v-date-picker
-    width="100%"
-    :model-value="value"
-    @update:modelValue="onChange"
-    :multiple="multiple"
-    @click:cancel="onCancel"
-  />
+  <div class="datepicker-container" v-bind="$attrs">
+    <app-input
+      @click="toggleCalendar"
+      :value="displayValue"
+      :class-name="$attrs['class-name']"
+      :variant="variant"
+      hide-details="auto"
+    />
+    <v-dialog v-model="showCalendar" content-class="dialog-content-wrapper" scrim="black">
+      <app-calendar
+        :model-value="modelValue"
+        @update:model-value="onDateChange"
+        :auto-apply="false"
+      />
+    </v-dialog>
+  </div>
 </template>
 
 <script>
+import '@vuepic/vue-datepicker/dist/main.css'
+import AppInput from '@/components/AppInput.vue'
+import AppCalendar from '@/components/AppCalendar.vue'
+
 export default {
   name: 'AppDatepicker',
+  components: {
+    AppCalendar,
+    AppInput
+  },
   props: {
-    value: {
-      type: Array
+    name: {
+      type: String
     },
-    multiple: {
+    modelValue: {
+      type: Date
+    },
+    input: {
       type: Boolean,
-      default: false
+      default: true
+    },
+    variant: {
+      type: String,
+      default: 'outline'
+    }
+  },
+  data() {
+    return {
+      showCalendar: false
+    }
+  },
+  computed: {
+    displayValue() {
+      return (
+        this.modelValue &&
+        this.modelValue.toLocaleString('en-US', {
+          hour12: true,
+          dateStyle: 'short',
+          timeStyle: 'short'
+        })
+      )
     }
   },
   methods: {
-    onChange(e) {
-      this.$emit('input', e)
+    toggleCalendar() {
+      this.showCalendar = !this.showCalendar
     },
-    onCancel() {
-      this.$emit('cancel')
+    onDateChange(newDate) {
+      this.toggleCalendar()
+      this.$emit('update:modelValue', newDate)
     }
   }
 }
 </script>
 
 <style scoped lang="scss">
-.v-picker {
-  color: white;
-  background: rgb(164 178 119 / 60%);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px); // Safari support
-}
-
-:deep(.v-btn__overlay),
-:deep(.v-btn__underlay),
-:deep(.v-btn) {
-  background: transparent !important;
-}
-
-:deep(.v-picker-title) {
-  display: none;
-}
-
-:deep(.v-date-picker-header) {
-  padding-top: 12px;
+:deep(.dialog-content-wrapper) {
+  align-items: center;
+  justify-content: center;
 }
 </style>

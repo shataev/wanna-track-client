@@ -23,13 +23,14 @@ export const getTodayBeginning = () => {
   return new Date(today)
 }
 
-export const getTodayEnd = () => {
-  const today = new Date()
+export const getDayEndByDate = (date) => {
+  const newDate = new Date(date)
+  newDate.setHours(23, 59, 59, 999)
 
-  today.setHours(23, 59, 59, 999)
-
-  return new Date(today)
+  return new Date(newDate)
 }
+
+export const getTodayEnd = () => getDayEndByDate(new Date())
 
 export const getCurrentDayRange = () => {
   return [getTodayBeginning(), getTodayEnd()]
