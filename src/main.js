@@ -16,7 +16,12 @@ import { aliases, mdi } from 'vuetify/iconsets/mdi'
 
 const vuetify = createVuetify({
   components: {
-    ...components
+    VTextField,
+    VBtn,
+    VIcon,
+    VImg,
+    VDialog,
+    VCard
   },
   directives,
   theme: {
@@ -45,6 +50,7 @@ const vuetify = createVuetify({
 })
 
 import validationPlugin from '@/plugins/validation.plugin'
+import { VBtn, VCard, VDialog, VIcon, VImg, VTextField } from 'vuetify/components'
 
 const app = createApp(App)
 app.use(createPinia())
