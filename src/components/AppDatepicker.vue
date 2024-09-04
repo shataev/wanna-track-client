@@ -6,6 +6,7 @@
       :class-name="$attrs['class-name']"
       :variant="variant"
       hide-details="auto"
+      readonly
     />
     <v-dialog v-model="showCalendar" content-class="dialog-content-wrapper" scrim="black">
       <app-calendar
