@@ -1,0 +1,25 @@
+title Authentication
+
+actor User
+participant Frontend
+participant Backend
+
+User->Frontend: open app
+
+note over Frontend: Check accessToken in LocalStorage
+
+alt token is found and actual
+Frontend->Backend: /api/costs
+Frontend<-Backend: all user Expenses
+User<-Frontend: show Expenses Page (/expenses)
+else token is not found or almost expired
+Frontend->Backend: try to use refreshToken from cookie /api/auth/
+note over Backend: Check refreshToken and if \n it's OK generate new accessToken
+Frontend<-Backend: {accessToken: 'sdcdskjbjvdv.dscds.dscds'}
+Frontend->Backend: /api/costs
+Frontend<-Backend: all user Expenses
+User<-Frontend: show Expenses Page (/expenses)
+note over Backend: If there is a problem with refreshToken
+Frontend<-Backend: 401
+User<-Frontend: show Sign In page (/expenses)
+end
