@@ -1,15 +1,35 @@
-# build stage
-FROM node:18.16.0-alpine as build-stage
-ARG VITE_BASE_URL=${VITE_BASE_URL}
-ARG VITE_VERIFICATION_CODE=${VITE_VERIFICATION_CODE}
-WORKDIR /app
-COPY package*.json ./
-RUN npm install -g --force yarn
-RUN yarn install
-COPY . .
-RUN yarn build
+# Build stage
+FROM node:18.16.0-alpine AS build-stage
 
-# production stage
-FROM socialengine/nginx-spa:latest
-COPY --from=build-stage /app/dist /app
-RUN chmod -R 777 /app
+# Define environment variables (if needed)
+ARG VITE_BASE_URL
+ARG VITE_VERIFICATION_CODE
+ENV VITE_BASE_URL=$VITE_BASE_URL
+ENV VITE_VERIFICATION_CODE=$VITE_VERIFICATION_CODE
+
+# Set working directory
+WORKDIR /app
+
+# Copy package.json and package-lock.json
+COPY package*.json ./
+
+# Install dependencies using npm
+RUN npm install
+
+# Copy the rest of the application files
+COPY . .
+
+# Build the application
+RUN npm run build
+
+# Production stage
+FROM nginx:alpine
+
+# Copy the built files from the build stage
+COPY --from=build-stage /app/dist /usr/share/nginx/html
+
+# Expose port for Nginx
+EXPOSE 80
+
+# Set default command for Nginx
+CMD ["nginx", "-g", "daemon off;"]
