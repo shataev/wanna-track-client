@@ -7,6 +7,7 @@
     :type="alert.type"
     density="compact"
     position="fixed"
+    width="100%"
   >
     {{ alert.text }}
   </v-alert>
@@ -232,7 +233,6 @@ $border-raduis-text-field: 999px;
 }
 
 .alert {
-  position: absolute;
   top: 0;
   left: 0;
   right: 0;
