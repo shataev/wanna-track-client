@@ -24,7 +24,7 @@
       :name="expense.category"
       :value="expense.amount"
       :color="expense.color || getButtonBackgroundColor(index)"
-      :progress="expense.amount / total"
+      :progress="1"
     >
     </app-value-button>
   </div>
