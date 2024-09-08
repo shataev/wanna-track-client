@@ -32,14 +32,15 @@
 
 <script>
 import { Doughnut } from 'vue-chartjs'
+import chroma from 'chroma-js'
 import { Chart as ChartJS, ArcElement } from 'chart.js'
 import AppValueButton from '@/components/AppValueButton.vue'
 import sendRequest from '@/api/sendRequest'
 import useUserStore from '@/stores/user'
 import { mapStores } from 'pinia'
-import { BUTTON_BACKGROUND_COLORS } from '@/constants/colors.constants'
 import DateFilter from '@/components/DateFilter.vue'
 import { getCurrentMonthRange } from '@/utils/date.utils'
+import { BUTTON_BACKGROUND_COLORS } from '@/constants/colors.constants'
 
 ChartJS.register(ArcElement)
 
@@ -93,12 +94,24 @@ export default {
     total() {
       return this.expenses.reduce((acc, expense) => acc + expense.amount, 0)
     },
+    colors() {
+      // Создаем шкалу на основе этих цветов
+      const scale = chroma
+        .scale(BUTTON_BACKGROUND_COLORS)
+        .mode('lab')
+        .domain([0, this.expenses.length])
+        .correctLightness()
+
+      const colors = scale.colors(this.expenses.length)
+
+      return colors
+    },
     chartData() {
       const result = {
         labels: [],
         datasets: [
           {
-            backgroundColor: BUTTON_BACKGROUND_COLORS, //TODO: fill this Array with colors constants
+            backgroundColor: this.colors,
             data: []
           }
         ]
@@ -114,7 +127,7 @@ export default {
   },
   methods: {
     getButtonBackgroundColor(index) {
-      return BUTTON_BACKGROUND_COLORS[index]
+      return this.colors[index]
     },
     onDateFilterInput(value) {
       this.dateFilter = value
