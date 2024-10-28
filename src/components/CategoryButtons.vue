@@ -19,7 +19,13 @@
         class="flex-column"
       ></v-radio>
       <div class="add-category-button">
-        <v-btn variant="text" :ripple="false" icon="mdi-plus-circle-outline" size="x-large"></v-btn>
+        <v-btn
+          variant="text"
+          :ripple="false"
+          icon="mdi-plus-circle-outline"
+          size="x-large"
+          @click="goNewCategoryPage"
+        ></v-btn>
       </div>
     </v-radio-group>
   </vee-field>
@@ -32,6 +38,11 @@ export default {
     categories: {
       type: Array,
       required: true
+    }
+  },
+  methods: {
+    goNewCategoryPage() {
+      this.$router.push('/new-category')
     }
   }
 }

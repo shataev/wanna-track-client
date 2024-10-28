@@ -14,6 +14,9 @@ import { WANNA_TRACK_ACCESS_TOKEN } from '@/constants'
 import useUserStore from '@/stores/user'
 import { checkAuth } from '@/utils/auth.utils'
 import EmailVerificationPage from '@/pages/EmailVerificationPage/EmailVerificationPage.vue'
+import newCategoryPage from '@/pages/NewCategoryPage.vue'
+import NewCategoryPage from '@/pages/NewCategoryPage.vue'
+import InnerPageLayout from '@/layouts/InnerPageLayout.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -63,6 +66,11 @@ const router = createRouter({
       path: '/email-verification',
       name: ROUTE_NAMES.EMAIL_VERIFICATION,
       component: EmailVerificationPage
+    },
+    {
+      path: '/new-category',
+      name: ROUTE_NAMES.NEW_CATEGORY,
+      component: NewCategoryPage
     }
   ]
 })
