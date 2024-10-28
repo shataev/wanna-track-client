@@ -11,82 +11,70 @@
   >
     {{ alert.text }}
   </v-alert>
-  <header class="d-flex mb-6 align-center">
-    <v-btn
-      icon="mdi-chevron-left"
-      @click="goBack"
-      height="35"
-      flat=""
-      width="35"
-      size="x-large"
-      color="#FFDF64"
-      class="button-back pa-0 text-app-green-lighter"
-    ></v-btn>
-    <h1 class="flex-grow-1 text-center text-app-light title">Add Expense</h1>
-    <LogoIcon></LogoIcon>
-  </header>
-  <vee-form :validation-schema="validationSchema" @submit="submit">
-    <v-form>
-      <div class="form-element-wrapper mb-4">
-        <label class="form-label text-app-light d-flex flex-column">
-          <span class="label-text mb-1">Amount</span>
-          <app-input-with-validation
-            type="number"
-            placeholder="Enter amount"
-            name="amount"
-            v-model="amount"
-            bg-color="transparent"
-            class-name="form-element form-element-input text-app-light"
-            variant="outlined"
-            hide-details="auto"
-          ></app-input-with-validation>
-        </label>
-      </div>
-
-      <div class="form-element-wrapper mb-4">
-        <label class="form-label text-app-light d-flex flex-column">
-          <span class="label-text mb-1">Category</span>
-          <category-buttons :categories="categories" v-model="category" />
-        </label>
-      </div>
-
-      <div class="form-element-wrapper mb-4">
-        <label class="form-label text-app-light d-flex flex-column">
-          <span class="label-text mb-1">Date</span>
-          <app-datepicker-with-validation
-            name="date"
-            class-name="form-element form-element-input text-app-light"
-            v-model="date"
-            :range="false"
-            variant="outlined"
-            hide-details="auto"
-            bg-color="transparent"
-          />
-        </label>
-      </div>
-
-      <div class="form-element-wrapper mb-4">
-        <label class="form-label text-app-light d-flex flex-column">
-          <span class="label-text mb-1">Comment</span>
-          <vee-field name="comment" v-slot="{ field, errors }" v-bind="$attrs">
-            <v-textarea
-              type="text"
-              placeholder="Enter comments"
-              v-bind="field"
-              name="comment"
-              class="form-element form-element-textarea bg-transparent text-app-light"
+  <inner-page-layout title="Add Expense">
+    <vee-form :validation-schema="validationSchema" @submit="submit">
+      <v-form>
+        <div class="form-element-wrapper mb-4">
+          <label class="form-label text-app-light d-flex flex-column">
+            <span class="label-text mb-1">Amount</span>
+            <app-input-with-validation
+              type="number"
+              placeholder="Enter amount"
+              name="amount"
+              v-model="amount"
+              bg-color="transparent"
+              class-name="form-element form-element-input text-app-light"
               variant="outlined"
-              rows="3"
               hide-details="auto"
-              :error-messages="errors"
-            ></v-textarea>
-          </vee-field>
-        </label>
-      </div>
-    </v-form>
+            ></app-input-with-validation>
+          </label>
+        </div>
 
-    <app-button class="mt-12" type="submit" :loading="request.pending">Save</app-button>
-  </vee-form>
+        <div class="form-element-wrapper mb-4">
+          <label class="form-label text-app-light d-flex flex-column">
+            <span class="label-text mb-1">Category</span>
+            <category-buttons :categories="categories" v-model="category" />
+          </label>
+        </div>
+
+        <div class="form-element-wrapper mb-4">
+          <label class="form-label text-app-light d-flex flex-column">
+            <span class="label-text mb-1">Date</span>
+            <app-datepicker-with-validation
+              name="date"
+              class-name="form-element form-element-input text-app-light"
+              v-model="date"
+              :range="false"
+              variant="outlined"
+              hide-details="auto"
+              bg-color="transparent"
+            />
+          </label>
+        </div>
+
+        <div class="form-element-wrapper mb-4">
+          <label class="form-label text-app-light d-flex flex-column">
+            <span class="label-text mb-1">Comment</span>
+            <vee-field name="comment" v-slot="{ field, errors }" v-bind="$attrs">
+              <v-textarea
+                type="text"
+                placeholder="Enter comments"
+                v-bind="field"
+                name="comment"
+                class="form-element form-element-textarea bg-transparent text-app-light"
+                variant="outlined"
+                rows="3"
+                hide-details="auto"
+                :error-messages="errors"
+              ></v-textarea>
+            </vee-field>
+          </label>
+        </div>
+      </v-form>
+
+      <app-button class="mt-12" type="submit" :loading="request.pending">Save</app-button>
+    </vee-form>
+  </inner-page-layout>
 </template>
 
 <script>
@@ -98,6 +86,7 @@ import sendRequest from '@/api/sendRequest'
 import useUserStore from '@/stores/user'
 import { mapStores } from 'pinia'
 import AppDatepickerWithValidation from '@/components/AppDatepickerWithValidation.vue'
+import InnerPageLayout from '@/layouts/InnerPageLayout.vue'
 
 const ALERT_INITIAL_STATE = {
   type: 'success',
@@ -129,6 +118,7 @@ export default {
     }
   },
   components: {
+    InnerPageLayout,
     AppDatepickerWithValidation,
     AppInputWithValidation,
     CategoryButtons,
