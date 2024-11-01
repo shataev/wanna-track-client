@@ -63,4 +63,35 @@ export default {
 }
 </script>
 
-<style scoped lang="scss"></style>
+<style scoped lang="scss">
+.form-label {
+  font-weight: 400;
+  font-size: 24px;
+  line-height: 28px;
+  letter-spacing: -0.1804px;
+}
+
+:deep(.v-input) {
+  .v-field__input,
+  .v-text-field__prefix {
+    padding-top: 9px;
+    padding-bottom: 9px;
+    min-height: 48px;
+    font-size: 18px;
+  }
+  /*
+  There is an issue with border radius of outlined text-field
+  So I have to remove default border
+  and set my own
+   */
+  .v-field__outline {
+    border: 1px solid #f6fdeb;
+    border-radius: 26px !important;
+
+    .v-field__outline__start,
+    .v-field__outline__end {
+      border: none !important;
+    }
+  }
+}
+</style>
