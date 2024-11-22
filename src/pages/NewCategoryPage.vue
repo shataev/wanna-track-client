@@ -2,11 +2,12 @@
 import InnerPageLayout from '@/layouts/InnerPageLayout.vue'
 import AppInputWithValidation from '@/components/AppInputWithValidation.vue'
 import AppButton from '@/components/AppButton.vue'
-import sendRequest from '@/api/sendRequest'
 import { useRequest } from '@/composables/useRequest'
 import useUserStore from '@/stores/user'
+import { useRouter } from 'vue-router'
 
 const { loading, fetchData } = useRequest()
+const router = useRouter()
 const { user } = useUserStore()
 
 const validationSchema = {
@@ -16,6 +17,7 @@ const validationSchema = {
 
 let categoryName = null
 let iconName = null
+
 const getIconByName = (name) => {
   if (!name) {
     return ''
@@ -34,15 +36,13 @@ const createCategory = async () => {
   await fetchData({
     url: '/api/category',
     method: 'post',
-    body: {
-      userId: user.id,
-      name: categoryName,
-      icon: getIconByName(iconName)
-    }
+    body: requestBody
   })
 
   categoryName = null
   iconName = null
+
+  router.back()
 }
 </script>
 
