@@ -31,8 +31,20 @@
         </div>
 
         <div class="form-element-wrapper mb-4">
-          <label class="form-label text-app-light d-flex flex-column">
-            <span class="label-text mb-1">Category</span>
+          <label class="form-label text-app-light d-flex flex-column mb-1">
+            <div class="d-flex justify-space-between align-center mb-1">
+              <span class="label-text">Category </span>
+              <div class="add-category-button">
+                <v-btn
+                  variant="text"
+                  :ripple="false"
+                  icon="mdi-plus"
+                  height="28px"
+                  width="28px"
+                  @click="() => $router.push('/new-category')"
+                ></v-btn>
+              </div>
+            </div>
             <category-buttons :categories="categories" v-model="category" />
           </label>
         </div>

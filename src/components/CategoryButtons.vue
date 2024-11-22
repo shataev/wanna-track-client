@@ -8,6 +8,7 @@
       hide-details="auto"
       v-bind="field"
       :error-messages="errors"
+      height="286px"
     >
       <v-radio
         v-for="category in categories"
@@ -18,15 +19,6 @@
         :value="category.value"
         class="flex-column"
       ></v-radio>
-      <div class="add-category-button">
-        <v-btn
-          variant="text"
-          :ripple="false"
-          icon="mdi-plus-circle-outline"
-          size="x-large"
-          @click="goNewCategoryPage"
-        ></v-btn>
-      </div>
     </v-radio-group>
   </vee-field>
 </template>
@@ -39,11 +31,6 @@ export default {
       type: Array,
       required: true
     }
-  },
-  methods: {
-    goNewCategoryPage() {
-      this.$router.push('/new-category')
-    }
   }
 }
 </script>
@@ -55,6 +42,11 @@ export default {
     border-radius: 26px !important;
     padding-top: 20px;
     padding-bottom: 20px;
+  }
+
+  .v-selection-control-group {
+    height: 286px;
+    overflow: auto;
   }
 
   .v-selection-control {
@@ -90,12 +82,5 @@ export default {
     padding-inline-start: 16px;
     padding-inline-end: 16px;
   }
-}
-
-.add-category-button {
-  flex-basis: 25%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
 }
 </style>
