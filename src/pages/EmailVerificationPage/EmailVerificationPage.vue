@@ -50,7 +50,7 @@ export default {
         }
       })
 
-      // TODO: handle this request and show notofication
+      // TODO: handle this request and show notification
       console.log(generationStatus)
     }
   },

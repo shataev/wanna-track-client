@@ -169,7 +169,10 @@ export default {
   async beforeMount() {
     const categories = await sendRequest({
       url: '/api/category',
-      method: 'get'
+      method: 'get',
+      params: {
+        userId: this.userStore.user.id
+      }
     })
 
     this.categories = categories
