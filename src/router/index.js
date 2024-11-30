@@ -1,7 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import AuthPage from '@/pages/AuthPage.vue'
 import ExpensesPage from '@/pages/ExpensesPage.vue'
-import IncomePage from '@/pages/IncomePage.vue'
 import SignInPage from '@/pages/SignInPage.vue'
 import SignUpPage from '@/pages/SignUpPage.vue'
 import NewExpensePage from '@/pages/NewExpensePage.vue'
@@ -14,9 +13,8 @@ import { WANNA_TRACK_ACCESS_TOKEN } from '@/constants'
 import useUserStore from '@/stores/user'
 import { checkAuth } from '@/utils/auth.utils'
 import EmailVerificationPage from '@/pages/EmailVerificationPage/EmailVerificationPage.vue'
-import newCategoryPage from '@/pages/NewCategoryPage.vue'
 import NewCategoryPage from '@/pages/NewCategoryPage.vue'
-import InnerPageLayout from '@/layouts/InnerPageLayout.vue'
+import IncomesPage from '@/pages/IncomesPage.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -31,9 +29,9 @@ const router = createRouter({
           component: ExpensesPage
         },
         {
-          path: 'income',
-          name: ROUTE_NAMES.INCOME,
-          component: IncomePage
+          path: 'incomes',
+          name: ROUTE_NAMES.INCOMES,
+          component: IncomesPage
         }
       ]
     },
