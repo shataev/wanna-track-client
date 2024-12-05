@@ -41,11 +41,11 @@
     >
     <v-btn
       rounded="pill"
-      to="/incomes"
-      value="incomes"
+      to="/funds"
+      value="funds"
       class="app-tabs-button text-none text-app-dark"
-      :class="tabClass('incomes')"
-      >Incomes</v-btn
+      :class="tabClass('funds')"
+      >Savings</v-btn
     >
   </v-btn-toggle>
   <router-view />
@@ -73,7 +73,8 @@ export default {
       return this.tab === value ? 'bg-app-yellow-lighter' : 'bg-transparent'
     },
     goToAddItem() {
-      this.$router.push({ name: ROUTE_NAMES.NEW_EXPENSE })
+      const routeName = this.tab === 'expenses' ? ROUTE_NAMES.NEW_EXPENSE : ROUTE_NAMES.NEW_FUND
+      this.$router.push({ name: routeName })
     },
     async logout() {
       await sendRequest({
