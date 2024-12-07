@@ -15,6 +15,7 @@ import EmailVerificationPage from '@/pages/EmailVerificationPage/EmailVerificati
 import NewCategoryPage from '@/pages/NewCategoryPage.vue'
 import FundsPage from '@/pages/FundsPage.vue'
 import NewFundPage from '@/pages/NewFundPage.vue'
+import FundPage from '@/pages/FundPage.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -59,6 +60,11 @@ const router = createRouter({
       path: '/funds/new',
       name: ROUTE_NAMES.NEW_FUND,
       component: NewFundPage
+    },
+    {
+      path: '/funds/:id',
+      name: ROUTE_NAMES.FUND,
+      component: FundPage
     },
     {
       path: '/email-verification',

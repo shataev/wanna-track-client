@@ -14,11 +14,12 @@
     <app-value-button
       v-for="(fund, index) in funds"
       :key="fund.category"
-      :icon="fund.icon"
+      :icon="fund.icon ?? ''"
       :name="fund.name"
       :value="fund.currentBalance"
       :color="fund.color || getButtonBackgroundColor(index)"
       :progress="1"
+      @click="goToFundDetails(`${fund['_id']}`)"
     >
     </app-value-button>
   </div>
@@ -32,7 +33,6 @@ import AppValueButton from '@/components/AppValueButton.vue'
 import sendRequest from '@/api/sendRequest'
 import useUserStore from '@/stores/user'
 import { mapStores } from 'pinia'
-import DateFilter from '@/components/DateFilter.vue'
 import { getCurrentMonthRange } from '@/utils/date.utils'
 import { BUTTON_BACKGROUND_COLORS } from '@/constants/colors.constants'
 
@@ -62,7 +62,7 @@ const centerText = {
 
 export default {
   name: 'SavingsPage',
-  components: { DateFilter, AppValueButton, Doughnut },
+  components: { AppValueButton, Doughnut },
   data() {
     return {
       funds: [],
@@ -122,8 +122,8 @@ export default {
     getButtonBackgroundColor(index) {
       return this.colors[index]
     },
-    onDateFilterInput(value) {
-      this.dateFilter = value
+    goToFundDetails(id) {
+      this.$router.push(`/funds/${id}`)
     },
     async fetchFunds() {
       const funds = await sendRequest({
@@ -131,8 +131,6 @@ export default {
         method: 'get',
         params: {
           userId: this.userStore.user.id
-          /*dateFrom: this.dateFilter.dates[0],
-          dateTo: this.dateFilter.dates[1]*/
         }
       })
 
