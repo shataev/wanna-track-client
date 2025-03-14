@@ -50,6 +50,8 @@ export function useRequest() {
         params
       })
       data.value = response.data
+
+      return data.value
     } catch (err) {
       error.value = err
     } finally {

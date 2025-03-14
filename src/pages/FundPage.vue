@@ -22,7 +22,7 @@
 
       <template #actions>
         <div class="d-flex justify-end w-100">
-          <v-btn color="#f2f5e9" @click="editFund" icon="mdi-pencil" />
+          <v-btn color="#f2f5e9" @click="goToEditFund" icon="mdi-pencil" />
           <v-btn color="#f2f5e9" @click="editFund" icon="mdi-swap-horizontal" />
           <v-btn color="#f2f5e9" @click="editFund" icon="mdi-delete" />
         </div>
@@ -34,11 +34,13 @@
 <script setup>
 import InnerPageLayout from '@/layouts/InnerPageLayout.vue'
 import { onBeforeMount, ref } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import sendRequest from '@/api/sendRequest'
 import useUserStore from '@/stores/user'
 
 const route = useRoute()
+const router = useRouter()
+
 const { user } = useUserStore()
 let fund = ref(null)
 
@@ -58,8 +60,8 @@ onBeforeMount(() => {
   fetchFund()
 })
 
-const editFund = () => {
-  console.log('Edit fund')
+const goToEditFund = () => {
+  router.push(`${route.fullPath}/edit`)
 }
 </script>
 

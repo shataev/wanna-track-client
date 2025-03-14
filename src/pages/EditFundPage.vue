@@ -1,57 +1,6 @@
-<script setup>
-import InnerPageLayout from '@/layouts/InnerPageLayout.vue'
-import AppInputWithValidation from '@/components/AppInputWithValidation.vue'
-import AppButton from '@/components/AppButton.vue'
-import { useRequest } from '@/composables/useRequest'
-import useUserStore from '@/stores/user'
-import { useRouter } from 'vue-router'
-
-const { loading, fetchData } = useRequest()
-const router = useRouter()
-const { user } = useUserStore()
-
-const validationSchema = {
-  name: 'required|min:3|max:200'
-}
-
-let fundName = null
-let balance = null
-let iconName = null
-let description = null
-
-const getIconByName = (name) => {
-  if (!name) {
-    return ''
-  }
-
-  return 'mdi-' + name
-}
-
-const createFund = async () => {
-  const requestBody = {
-    userId: user.id,
-    name: fundName,
-    description,
-    initialBalance: balance || 0,
-    icon: getIconByName(iconName)
-  }
-
-  await fetchData({
-    url: '/api/funds',
-    method: 'post',
-    body: requestBody
-  })
-
-  fundName = null
-  iconName = null
-
-  router.back()
-}
-</script>
-
 <template>
   <inner-page-layout title="Add New Fund">
-    <vee-form :validation-schema="validationSchema" @submit="createFund">
+    <vee-form :validation-schema="validationSchema" @submit="handleSubmit">
       <v-form>
         <div class="form-element-wrapper mb-4">
           <label class="form-label text-app-light d-flex flex-column">
@@ -134,12 +83,84 @@ const createFund = async () => {
         </div>
       </div>
 
-      <app-button class="mt-12" type="submit" :loading="loading" @click="createFund"
-        >Save</app-button
-      >
+      <app-button class="mt-12" type="submit" :loading="loading">Save</app-button>
     </vee-form>
   </inner-page-layout>
 </template>
+
+<script setup>
+import InnerPageLayout from '@/layouts/InnerPageLayout.vue'
+import AppInputWithValidation from '@/components/AppInputWithValidation.vue'
+import AppButton from '@/components/AppButton.vue'
+import { useRequest } from '@/composables/useRequest'
+import useUserStore from '@/stores/user'
+import { useRoute, useRouter } from 'vue-router'
+import { computed, onBeforeMount, onMounted, ref } from 'vue'
+
+const { loading, fetchData } = useRequest()
+const router = useRouter()
+const route = useRoute()
+const { user } = useUserStore()
+
+const fundName = ref('')
+const balance = ref('')
+const iconName = ref('')
+const description = ref('')
+const fundId = computed(() => route.params.id)
+const isEditMode = computed(() => !!fundId.value)
+
+const validationSchema = {
+  fundName: 'required|min:3|max:200'
+}
+
+const getIconByName = (name) => {
+  if (!name) {
+    return ''
+  }
+
+  return 'mdi-' + name
+}
+
+onBeforeMount(async () => {
+  if (isEditMode.value) {
+    const response = await fetchData({ url: `/api/funds/${fundId.value}`, method: 'get' })
+
+    fundName.value = response.name
+    description.value = response.description
+    balance.value = response.currentBalance
+    iconName.value = response.icon.replace('mdi-', '')
+  }
+})
+
+const handleSubmit = async () => {
+  const requestBody = {
+    userId: user.id,
+    name: fundName.value,
+    description: description.value,
+    icon: getIconByName(iconName.value)
+  }
+
+  if (isEditMode.value) {
+    requestBody.currentBalance = balance.value || 0
+
+    await fetchData({
+      url: `/api/funds/${fundId.value}`,
+      method: 'put',
+      body: requestBody
+    })
+  } else {
+    requestBody.initialBalance = balance.value || 0
+
+    await fetchData({
+      url: '/api/funds',
+      method: 'post',
+      body: requestBody
+    })
+  }
+
+  router.back()
+}
+</script>
 
 <style scoped lang="scss">
 .form-label {

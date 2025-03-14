@@ -14,8 +14,8 @@ import { checkAuth } from '@/utils/auth.utils'
 import EmailVerificationPage from '@/pages/EmailVerificationPage/EmailVerificationPage.vue'
 import NewCategoryPage from '@/pages/NewCategoryPage.vue'
 import FundsPage from '@/pages/FundsPage.vue'
-import NewFundPage from '@/pages/NewFundPage.vue'
 import FundPage from '@/pages/FundPage.vue'
+import EditFundPage from '@/pages/EditFundPage.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -59,12 +59,17 @@ const router = createRouter({
     {
       path: '/funds/new',
       name: ROUTE_NAMES.NEW_FUND,
-      component: NewFundPage
+      component: EditFundPage
     },
     {
       path: '/funds/:id',
       name: ROUTE_NAMES.FUND,
       component: FundPage
+    },
+    {
+      path: '/funds/:id/edit',
+      name: ROUTE_NAMES.FUND_EDIT,
+      component: EditFundPage
     },
     {
       path: '/email-verification',

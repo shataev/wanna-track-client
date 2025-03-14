@@ -1,5 +1,5 @@
 <template>
-  <div class="chart-container position-relative d-flex flex-column mb-4 pa-6">
+  <!--  <div class="chart-container position-relative d-flex flex-column mb-4 pa-6">
     <div class="background-layer position-absolute"></div>
     <Doughnut
       id="my-chart-id"
@@ -8,10 +8,10 @@
       :data="chartData"
       class="position-relative"
     />
-  </div>
+  </div>-->
 
   <div class="values">
-    <app-value-button
+    <!--    <app-value-button
       v-for="(fund, index) in funds"
       :key="fund.category"
       :icon="fund.icon ?? ''"
@@ -21,7 +21,13 @@
       :progress="1"
       @click="goToFundDetails(`${fund['_id']}`)"
     >
-    </app-value-button>
+    </app-value-button>-->
+    <FundCard
+      v-for="fund in funds"
+      :fund
+      @edit-fund="editFund(fund._id)"
+      @delete-fund="deleteFund(fund._id)"
+    />
   </div>
 </template>
 
@@ -35,6 +41,9 @@ import useUserStore from '@/stores/user'
 import { mapStores } from 'pinia'
 import { getCurrentMonthRange } from '@/utils/date.utils'
 import { BUTTON_BACKGROUND_COLORS } from '@/constants/colors.constants'
+import FundCard from '@/components/FundCard.vue'
+import router from '@/router'
+import { ROUTE_NAMES } from '@/router/router.constants'
 
 ChartJS.register(ArcElement)
 
@@ -62,7 +71,7 @@ const centerText = {
 
 export default {
   name: 'SavingsPage',
-  components: { AppValueButton, Doughnut },
+  components: { FundCard, AppValueButton, Doughnut },
   data() {
     return {
       funds: [],
@@ -122,9 +131,15 @@ export default {
     getButtonBackgroundColor(index) {
       return this.colors[index]
     },
-    goToFundDetails(id) {
-      this.$router.push(`/funds/${id}`)
+    editFund(fundId) {
+      this.$router.push({
+        name: ROUTE_NAMES.FUND_EDIT,
+        params: {
+          id: fundId
+        }
+      })
     },
+    deleteFund(fundId) {},
     async fetchFunds() {
       const funds = await sendRequest({
         url: '/api/funds',
