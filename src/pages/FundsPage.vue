@@ -9,22 +9,15 @@
       class="position-relative"
     />
   </div>-->
+  <div class="funds-total text-center text-white font-weight-medium text-h4 mb-4">
+    {{ total }} &#xE3F;
+  </div>
 
   <div class="values">
-    <!--    <app-value-button
-      v-for="(fund, index) in funds"
-      :key="fund.category"
-      :icon="fund.icon ?? ''"
-      :name="fund.name"
-      :value="fund.currentBalance"
-      :color="fund.color || getButtonBackgroundColor(index)"
-      :progress="1"
-      @click="goToFundDetails(`${fund['_id']}`)"
-    >
-    </app-value-button>-->
     <FundCard
       v-for="fund in funds"
       :key="fund._id"
+      class="mb-4"
       :fund
       @edit-fund="editFund(fund._id)"
       @delete-fund="deleteFund(fund._id)"
@@ -33,10 +26,8 @@
 </template>
 
 <script>
-import { Doughnut } from 'vue-chartjs'
 import chroma from 'chroma-js'
 import { Chart as ChartJS, ArcElement } from 'chart.js'
-import AppValueButton from '@/components/AppValueButton.vue'
 import sendRequest from '@/api/sendRequest'
 import useUserStore from '@/stores/user'
 import { mapStores } from 'pinia'
@@ -72,7 +63,7 @@ const centerText = {
 
 export default {
   name: 'SavingsPage',
-  components: { FundCard, AppValueButton, Doughnut },
+  components: { FundCard },
   data() {
     return {
       funds: [],
