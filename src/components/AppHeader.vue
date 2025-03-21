@@ -19,7 +19,7 @@ const { title } = defineProps({
       class="button-back pa-0 text-app-green-lighter"
     ></v-btn>
     <h1 class="flex-grow-1 text-center text-app-light title">{{ title }}</h1>
-    <LogoIcon></LogoIcon>
+    <LogoIcon @click="$router.push('/')"></LogoIcon>
   </header>
 </template>
 
