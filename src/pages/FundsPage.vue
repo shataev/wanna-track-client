@@ -24,6 +24,7 @@
     </app-value-button>-->
     <FundCard
       v-for="fund in funds"
+      :key="fund._id"
       :fund
       @edit-fund="editFund(fund._id)"
       @delete-fund="deleteFund(fund._id)"
@@ -139,7 +140,15 @@ export default {
         }
       })
     },
-    deleteFund(fundId) {},
+    async deleteFund(fundId) {
+      await sendRequest({
+        url: `/api/funds/${fundId}`,
+        method: 'delete',
+        params: {
+          userId: this.userStore.user.id
+        }
+      })
+    },
     async fetchFunds() {
       const funds = await sendRequest({
         url: '/api/funds',

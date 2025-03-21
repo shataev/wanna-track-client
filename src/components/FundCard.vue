@@ -21,7 +21,7 @@
     <template #actions>
       <div class="d-flex justify-end w-100">
         <v-btn color="#f2f5e9" @click="$emit('editFund')" icon="mdi-pencil" />
-        <v-btn color="#f2f5e9" icon="mdi-swap-horizontal" />
+        <!--        <v-btn color="#f2f5e9" icon="mdi-swap-horizontal" />-->
         <v-btn color="#f2f5e9" @click="$emit('deleteFund')" icon="mdi-delete" />
       </div>
     </template>
