@@ -20,6 +20,22 @@
 
         <div class="form-element-wrapper mb-4">
           <label class="form-label text-app-light d-flex flex-column">
+            <span class="label-text mb-1">Balance</span>
+            <app-input-with-validation
+              type="number"
+              placeholder="Enter amount"
+              name="balance"
+              v-model="balance"
+              bg-color="transparent"
+              class-name="form-element form-element-input text-app-light"
+              variant="outlined"
+              hide-details="auto"
+            ></app-input-with-validation>
+          </label>
+        </div>
+
+        <div class="form-element-wrapper mb-4">
+          <label class="form-label text-app-light d-flex flex-column">
             <span class="label-text mb-1">Description</span>
             <vee-field name="description" v-slot="{ field, errors }" v-bind="$attrs">
               <v-textarea
@@ -38,19 +54,14 @@
         </div>
 
         <div class="form-element-wrapper mb-4">
-          <label class="form-label text-app-light d-flex flex-column">
-            <span class="label-text mb-1">Balance</span>
-            <app-input-with-validation
-              type="number"
-              placeholder="Enter amount"
-              name="balance"
-              v-model="balance"
-              bg-color="transparent"
-              class-name="form-element form-element-input text-app-light"
-              variant="outlined"
-              hide-details="auto"
-            ></app-input-with-validation>
-          </label>
+          <v-checkbox
+            v-model="isDefault"
+            name="isDefault"
+            class="text-app-light"
+            label="Set as default fund for expenses"
+            color="app-light"
+            hide-details="auto"
+          />
         </div>
 
         <div class="form-element-wrapper mb-4">
@@ -106,6 +117,7 @@ const fundName = ref('')
 const balance = ref('')
 const iconName = ref('')
 const description = ref('')
+const isDefault = ref(false)
 const fundId = computed(() => route.params.id)
 const isEditMode = computed(() => !!fundId.value)
 
@@ -129,6 +141,7 @@ onBeforeMount(async () => {
     description.value = response.description
     balance.value = response.currentBalance
     iconName.value = response.icon.replace('mdi-', '')
+    isDefault.value = response.isDefault || false
   }
 })
 
@@ -137,7 +150,8 @@ const handleSubmit = async () => {
     userId: user.id,
     name: fundName.value,
     description: description.value,
-    icon: getIconByName(iconName.value)
+    icon: getIconByName(iconName.value),
+    isDefault: isDefault.value
   }
 
   if (isEditMode.value) {
@@ -197,5 +211,9 @@ const handleSubmit = async () => {
       border: none !important;
     }
   }
+}
+
+:deep(.v-checkbox .v-label) {
+  opacity: 1 !important;
 }
 </style>
