@@ -31,6 +31,23 @@
         </div>
 
         <div class="form-element-wrapper mb-4">
+          <label class="form-label text-app-light d-flex flex-column">
+            <span class="label-text mb-1">Source fund</span>
+            <v-select
+              v-model="sourceFund"
+              name="sourceFund"
+              :items="funds"
+              item-title="name"
+              item-value="_id"
+              class="form-element form-element-input text-app-light"
+              variant="outlined"
+              hide-details="auto"
+              bg-color="transparent"
+            ></v-select>
+          </label>
+        </div>
+
+        <div class="form-element-wrapper mb-4">
           <label class="form-label text-app-light d-flex flex-column mb-1">
             <div class="d-flex justify-space-between align-center mb-1">
               <span class="label-text">Category </span>
@@ -118,6 +135,8 @@ export default {
       category: null,
       date: new Date(),
       comment: '',
+      sourceFund: null,
+      funds: [],
       validationSchema: {
         amount: 'required|min_expense_value:1',
         category: 'required',
@@ -160,7 +179,8 @@ export default {
           amount,
           category,
           date: this.date,
-          comment
+          comment,
+          fundId: this.sourceFund
         }
       })
 
@@ -179,15 +199,32 @@ export default {
     }
   },
   async beforeMount() {
-    const categories = await sendRequest({
-      url: '/api/category',
-      method: 'get',
-      params: {
-        userId: this.userStore.user.id
-      }
-    })
+    const [categories, funds] = await Promise.all([
+      sendRequest({
+        url: '/api/category',
+        method: 'get',
+        params: {
+          userId: this.userStore.user.id
+        }
+      }),
+      sendRequest({
+        url: '/api/funds',
+        method: 'get',
+        params: {
+          userId: this.userStore.user.id
+        }
+      })
+    ])
 
     this.categories = categories
+    this.funds = funds
+    
+    // Set default fund if exists
+    const defaultFund = this.funds.find(fund => fund.isDefault)
+    
+    if (defaultFund) {
+      this.sourceFund = defaultFund._id
+    }
   }
 }
 </script>
