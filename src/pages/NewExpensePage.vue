@@ -31,6 +31,23 @@
         </div>
 
         <div class="form-element-wrapper mb-4">
+          <label class="form-label text-app-light d-flex flex-column">
+            <span class="label-text mb-1">Source fund</span>
+            <v-select
+              v-model="sourceFund"
+              name="sourceFund"
+              :items="funds"
+              item-title="name"
+              item-value="_id"
+              class="form-element form-element-input text-app-light"
+              variant="outlined"
+              hide-details="auto"
+              bg-color="transparent"
+            ></v-select>
+          </label>
+        </div>
+
+        <div class="form-element-wrapper mb-4">
           <label class="form-label text-app-light d-flex flex-column mb-1">
             <div class="d-flex justify-space-between align-center mb-1">
               <span class="label-text">Category </span>
@@ -118,6 +135,8 @@ export default {
       category: null,
       date: new Date(),
       comment: '',
+      sourceFund: null,
+      funds: [],
       validationSchema: {
         amount: 'required|min_expense_value:1',
         category: 'required',
@@ -152,42 +171,97 @@ export default {
 
       this.request.pending = true
 
-      await sendRequest({
-        url: '/api/cost',
-        method: 'post',
-        body: {
-          userId: this.userStore.user.id,
-          amount,
-          category,
-          date: this.date,
-          comment
+      try {
+        await sendRequest({
+          url: '/api/cost',
+          method: 'post',
+          body: {
+            userId: this.userStore.user.id,
+            amount,
+            category,
+            date: this.date,
+            comment,
+            fundId: this.sourceFund
+          }
+        })
+
+        resetForm()
+        this.alert = {
+          type: 'success',
+          text: 'Created!',
+          isVisible: true
         }
-      })
-
-      resetForm()
-
-      this.request.pending = false
-      this.alert.text = 'Created!'
-      this.alert.isVisible = true
-
-      setTimeout(() => {
-        this.alert = { ...ALERT_INITIAL_STATE }
-      }, 3000)
+      } catch (error) {      
+        if (error.response) {
+          const { error: errorMessage } = error.response.data
+          
+          if (errorMessage === 'Fund not found') {
+            this.alert = {
+              type: 'error',
+              text: 'Selected fund was not found. Please try again.',
+              isVisible: true
+            }
+          } else if (errorMessage === 'Insufficient funds') {
+            this.alert = {
+              type: 'error',
+              text: 'Insufficient funds in the selected account. Please choose another fund or reduce the amount.',
+              isVisible: true
+            }
+          } else {
+            this.alert = {
+              type: 'error',
+              text: 'An error occurred while creating the expense. Please try again.',
+              isVisible: true
+            }
+          }
+        } else {
+          this.alert = {
+            type: 'error',
+            text: 'Network error. Please check your connection and try again.',
+            isVisible: true
+          }
+        }
+      } finally {
+        this.request.pending = false
+        setTimeout(() => {
+          this.alert = { ...ALERT_INITIAL_STATE }
+        }, 5000)
+      }
     },
     onDateChange(newDate) {
       this.date = newDate
     }
   },
   async beforeMount() {
-    const categories = await sendRequest({
-      url: '/api/category',
-      method: 'get',
-      params: {
-        userId: this.userStore.user.id
-      }
-    })
+    const [categories, funds] = await Promise.all([
+      sendRequest({
+        url: '/api/category',
+        method: 'get',
+        params: {
+          userId: this.userStore.user.id
+        }
+      }),
+      sendRequest({
+        url: '/api/funds',
+        method: 'get',
+        params: {
+          userId: this.userStore.user.id
+        }
+      })
+    ])
 
     this.categories = categories
+    this.funds = [
+      { _id: null, name: 'No fund', isDefault: false },
+      ...funds
+    ]
+    
+    // Set default fund if exists
+    const defaultFund = this.funds.find(fund => fund.isDefault)
+    
+    if (defaultFund) {
+      this.sourceFund = defaultFund._id
+    }
   }
 }
 </script>
