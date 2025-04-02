@@ -251,7 +251,10 @@ export default {
     ])
 
     this.categories = categories
-    this.funds = funds
+    this.funds = [
+      { _id: null, name: 'No fund', isDefault: false },
+      ...funds
+    ]
     
     // Set default fund if exists
     const defaultFund = this.funds.find(fund => fund.isDefault)
