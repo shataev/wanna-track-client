@@ -171,28 +171,62 @@ export default {
 
       this.request.pending = true
 
-      await sendRequest({
-        url: '/api/cost',
-        method: 'post',
-        body: {
-          userId: this.userStore.user.id,
-          amount,
-          category,
-          date: this.date,
-          comment,
-          fundId: this.sourceFund
+      try {
+        await sendRequest({
+          url: '/api/cost',
+          method: 'post',
+          body: {
+            userId: this.userStore.user.id,
+            amount,
+            category,
+            date: this.date,
+            comment,
+            fundId: this.sourceFund
+          }
+        })
+
+        resetForm()
+        this.alert = {
+          type: 'success',
+          text: 'Created!',
+          isVisible: true
         }
-      })
-
-      resetForm()
-
-      this.request.pending = false
-      this.alert.text = 'Created!'
-      this.alert.isVisible = true
-
-      setTimeout(() => {
-        this.alert = { ...ALERT_INITIAL_STATE }
-      }, 3000)
+      } catch (error) {      
+        if (error.response) {
+          const { error: errorMessage } = error.response.data
+          
+          if (errorMessage === 'Fund not found') {
+            this.alert = {
+              type: 'error',
+              text: 'Selected fund was not found. Please try again.',
+              isVisible: true
+            }
+          } else if (errorMessage === 'Insufficient funds') {
+            this.alert = {
+              type: 'error',
+              text: 'Insufficient funds in the selected account. Please choose another fund or reduce the amount.',
+              isVisible: true
+            }
+          } else {
+            this.alert = {
+              type: 'error',
+              text: 'An error occurred while creating the expense. Please try again.',
+              isVisible: true
+            }
+          }
+        } else {
+          this.alert = {
+            type: 'error',
+            text: 'Network error. Please check your connection and try again.',
+            isVisible: true
+          }
+        }
+      } finally {
+        this.request.pending = false
+        setTimeout(() => {
+          this.alert = { ...ALERT_INITIAL_STATE }
+        }, 5000)
+      }
     },
     onDateChange(newDate) {
       this.date = newDate
