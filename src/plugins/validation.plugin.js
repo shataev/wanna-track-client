@@ -1,11 +1,12 @@
 import { defineRule, Form as VeeForm, Field as VeeField, configure } from 'vee-validate'
-import { required, alpha_num, min, max, email, is, min_value } from '@vee-validate/rules'
+import { required, alpha_num, min, max, email, is, min_value, numeric, max_value } from '@vee-validate/rules'
 
 export default {
   install(app) {
     app.component('VeeForm', VeeForm)
     app.component('VeeField', VeeField)
 
+    defineRule('numeric', numeric)
     defineRule('required', required)
     defineRule('alphaNum', alpha_num)
     defineRule('min', min)
@@ -13,6 +14,7 @@ export default {
     defineRule('email', email)
     defineRule('is', is)
     defineRule('min_value', min_value)
+    defineRule('max_value', max_value)
     defineRule('min_expense_value', min_value)
 
     configure({
@@ -22,7 +24,8 @@ export default {
           min: `The field ${ctx.field} is too short`,
           max: `The field ${ctx.field} is too long`,
           email: `The field ${ctx.field} must be a valid email`,
-          min_value: `The field ${ctx.field} is too low`,
+          min_value: `The field ${ctx.field} is too small`,
+          max_value: `The field ${ctx.field} is too big`,
           password_mismatch: "The passwords don't match",
           min_expense_value: "The expense can't be less than 1"
         }
