@@ -1,22 +1,21 @@
 <template>
   <inner-page-layout title="Transfer Funds">
-    <vee-form :validation-schema="validationSchema" @submit="handleSubmit">
-      <v-form>
+    <v-form @submit.prevent="handleSubmitForm">
         <div class="form-element-wrapper mb-4">
           <label class="form-label text-app-light d-flex flex-column">
             <span class="label-text mb-1">From Fund</span>
-            <v-select
-              v-model="sourceFund"
-              name="sourceFund"
-              :items="funds"
-              item-title="name"
-              item-value="_id"
-              class="form-element form-element-input text-app-light"
-              variant="outlined"
-              hide-details="auto"
-              :error-messages="errors.sourceFund"
-              @update:model-value="handleSourceFundChange"
-            ></v-select>
+              <v-select
+                :model-value="sourceFund"
+                v-bind="sourceFundAttrs"
+                :items="funds"
+                item-title="name"
+                item-value="_id"
+                class="form-element form-element-input text-app-light"
+                variant="outlined"
+                hide-details="auto"
+                :error-messages="errors.sourceFund"
+                @update:model-value="setSourceFundValue"
+              />
             <div v-if="selectedSourceFund" class="mt-2 text-app-light text-subtitle-1">
               Available balance: {{ selectedSourceFund.currentBalance }} &#xE3F;
             </div>
@@ -26,18 +25,18 @@
         <div class="form-element-wrapper mb-4">
           <label class="form-label text-app-light d-flex flex-column">
             <span class="label-text mb-1">To Fund</span>
-            <v-select
-              v-model="targetFund"
-              name="targetFund"
-              :items="availableTargetFunds"
-              item-title="name"
-              item-value="_id"
-              class="form-element form-element-input text-app-light"
-              variant="outlined"
-              hide-details="auto"
-              :error-messages="errors.targetFund"
-              @update:model-value="handleTargetFundChange"
-            ></v-select>
+              <v-select
+                :model-value="targetFund"
+                v-bind="targetFundAttrs"
+                :items="availableTargetFunds"
+                item-title="name"
+                item-value="_id"
+                class="form-element form-element-input text-app-light"
+                variant="outlined"
+                hide-details="auto"
+                :error-messages="errors.targetFund"
+                @update:model-value="setFieldValue('targetFund', $event)"
+              ></v-select>
             <div v-if="selectedTargetFund" class="mt-2 text-app-light text-subtitle-1">
               Current balance: {{ selectedTargetFund.currentBalance }} &#xE3F;
             </div>
@@ -47,71 +46,88 @@
         <div class="form-element-wrapper mb-4">
           <label class="form-label text-app-light d-flex flex-column">
             <span class="label-text mb-1">Amount</span>
-            <app-input-with-validation
-              type="number"
-              placeholder="Enter amount"
-              name="amount"
-              v-model="amount"
-              bg-color="transparent"
-              class-name="form-element form-element-input text-app-light"
-              variant="outlined"
-              hide-details="auto"
-              :error-messages="errors.amount"
-              @update:model-value="validateAmount"
-            ></app-input-with-validation>
+              <app-input
+                type="number"
+                v-bind="amountAttrs"
+                v-model="amount"
+                placeholder="Enter amount"
+                name="amount"
+                bg-color="transparent"
+                @update:model-value="setFieldValue('amount', $event)"
+                class-name="form-element form-element-input text-app-light"
+                variant="outlined"
+                hide-details="auto"
+                :error-messages="errors.amount"
+              ></app-input>
+
             <div v-if="amount && selectedSourceFund" class="mt-2 text-app-light text-subtitle-1">
               Remaining balance: {{ remainingBalance }} &#xE3F;
             </div>
           </label>
         </div>
-      </v-form>
 
       <app-button class="mt-12" type="submit" :loading="loading">Transfer</app-button>
-    </vee-form>
+    </v-form>
   </inner-page-layout>
 </template>
 
 <script setup>
 import InnerPageLayout from '@/layouts/InnerPageLayout.vue'
-import AppInputWithValidation from '@/components/AppInputWithValidation.vue'
+import AppInput from '@/components/AppInput.vue'
 import AppButton from '@/components/AppButton.vue'
 import { useRequest } from '@/composables/useRequest'
 import useUserStore from '@/stores/user'
 import { useRouter, useRoute } from 'vue-router'
-import { ref, computed, onBeforeMount } from 'vue'
+import { ref, computed, onBeforeMount, reactive } from 'vue'
+import { useForm } from 'vee-validate'
 
 const { loading, fetchData } = useRequest()
 const router = useRouter()
 const { user } = useUserStore()
 const route = useRoute()
 
-const sourceFund = ref('')
-const targetFund = ref('')
-const amount = ref('')
 const funds = ref([])
-const errors = ref({})
 
 const selectedSourceFund = computed(() => {
-  return funds.value.find(fund => fund._id === sourceFund.value)
-})
+  return funds.value.find(fund => fund._id === sourceFund.value);
+});
 
 const selectedTargetFund = computed(() => {
-  return funds.value.find(fund => fund._id === targetFund.value)
-})
+  return funds.value.find(fund => fund._id === targetFund.value);
+});
 
 const availableTargetFunds = computed(() => {
-  return funds.value.filter(fund => fund._id !== sourceFund.value)
-})
+  console.log('[availableTargetFunds] sourceFund', sourceFund)
+  return funds.value.filter(fund => fund._id !== sourceFund.value);
+});
 
 const remainingBalance = computed(() => {
-  if (!selectedSourceFund.value || !amount.value) return 0
-  return selectedSourceFund.value.currentBalance - Number(amount.value)
-})
+  if (!selectedSourceFund.value || !amount.value) return 0;
+  return selectedSourceFund.value.currentBalance - Number(amount.value);
+});
 
-const validationSchema = {
-  sourceFund: 'required|different:targetFund',
-  targetFund: 'required|different:sourceFund',
-  amount: 'required|numeric|min_value:1|max_value:3'
+const validationSchema = computed(() => ({
+  sourceFund: 'required',
+  targetFund: 'required',
+  amount: `required|numeric|min_value:1|max_value:${selectedSourceFund.value?.currentBalance ?? 1}`
+}));
+
+const { handleSubmit, setFieldValue, errors, defineField, resetForm } = useForm({validationSchema, initialValues: {
+  sourceFund: '',
+  targetFund: '',
+  amount: ''
+}});
+
+const [sourceFund, sourceFundAttrs] = defineField('sourceFund');
+const [targetFund, targetFundAttrs] = defineField('targetFund');
+const [amount, amountAttrs] = defineField('amount');
+
+const setSourceFundValue = (value) => {
+  resetForm({ values: {
+    sourceFund: value,
+    targetFund: '',
+    amount: ''
+  } });
 }
 
 onBeforeMount(async () => {
@@ -121,44 +137,20 @@ onBeforeMount(async () => {
     params: {
       userId: user.id
     }
-  })
+  });
 
-  funds.value = response
+  funds.value = response;
 
-  // Set source fund from URL if provided
-  if (route.query.sourceFundId) {
-    sourceFund.value = route.query.sourceFundId
-  }
-})
+  resetForm({ values: {
+    sourceFund: route.query.sourceFundId,
+    targetFund: '',
+    amount: ''
+  } });
+});
 
-const handleSourceFundChange = () => {
-  // Reset target fund if it's the same as source
-  if (targetFund.value === sourceFund.value) {
-    targetFund.value = ''
-  }
-  // Reset amount when source fund changes
-  amount.value = ''
-  validateAmount()
-}
+const handleSubmitForm = handleSubmit(async (formData) => {
+  console.log(formData);
 
-const handleTargetFundChange = () => {
-  validateAmount()
-}
-
-const validateAmount = () => {
-  if (!selectedSourceFund.value || !amount.value) return
-
-  const amountNum = Number(amount.value)
-  if (amountNum > selectedSourceFund.value.currentBalance) {
-    errors.value.amount = 'Amount exceeds available balance'
-  } else if (amountNum <= 0) {
-    errors.value.amount = 'Amount must be greater than 0'
-  } else {
-    errors.value.amount = ''
-  }
-}
-
-const handleSubmit = async () => {
   try {
     // Final validation before submit
     if (!selectedSourceFund.value || !selectedTargetFund.value || !amount.value) {
@@ -176,9 +168,10 @@ const handleSubmit = async () => {
       method: 'post',
       body: {
         userId: user.id,
-        sourceFundId: sourceFund.value,
-        targetFundId: targetFund.value,
-        amount: amountNum
+        fromFundId: sourceFund.value,
+        toFundId: targetFund.value,
+        amount: amountNum,
+        description: 'Fund transfer'
       }
     })
 
@@ -192,7 +185,8 @@ const handleSubmit = async () => {
       errors.value.sourceFund = 'Something went wrong. Please try again.'
     }
   }
-}
+});
+
 </script>
 
 <style scoped lang="scss">
