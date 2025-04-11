@@ -97,7 +97,6 @@ const selectedTargetFund = computed(() => {
 });
 
 const availableTargetFunds = computed(() => {
-  console.log('[availableTargetFunds] sourceFund', sourceFund)
   return funds.value.filter(fund => fund._id !== sourceFund.value);
 });
 
@@ -149,8 +148,6 @@ onBeforeMount(async () => {
 });
 
 const handleSubmitForm = handleSubmit(async (formData) => {
-  console.log(formData);
-
   try {
     // Final validation before submit
     if (!selectedSourceFund.value || !selectedTargetFund.value || !amount.value) {
