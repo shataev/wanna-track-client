@@ -21,7 +21,7 @@
     <template #actions>
       <div class="d-flex justify-end w-100">
         <v-btn color="#f2f5e9" @click="$emit('editFund')" icon="mdi-pencil" />
-        <!--        <v-btn color="#f2f5e9" icon="mdi-swap-horizontal" />-->
+        <v-btn color="#f2f5e9" @click="handleTransfer" icon="mdi-swap-horizontal" />
         <v-btn color="#f2f5e9" @click="$emit('deleteFund')" icon="mdi-delete" />
       </div>
     </template>
@@ -29,11 +29,21 @@
 </template>
 
 <script setup>
-defineProps({
+import { useRouter } from 'vue-router'
+import { ROUTE_NAMES } from '@/router/router.constants'
+
+const router = useRouter()
+const props = defineProps({
   fund: {}
 })
-const goToEditFund = () => {
-  router.push(`${route.fullPath}/edit`)
+
+const handleTransfer = () => {
+  router.push({
+    name: ROUTE_NAMES.FUND_TRANSFER,
+    query: {
+      sourceFundId: props.fund._id
+    }
+  })
 }
 </script>
 

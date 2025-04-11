@@ -80,6 +80,11 @@ const router = createRouter({
       path: '/new-category',
       name: ROUTE_NAMES.NEW_CATEGORY,
       component: NewCategoryPage
+    },
+    {
+      path: '/funds/transfer',
+      name: ROUTE_NAMES.FUND_TRANSFER,
+      component: () => import('@/pages/TransferFundPage.vue')
     }
   ]
 })
