@@ -34,7 +34,6 @@ import { mapStores } from 'pinia'
 import { getCurrentMonthRange } from '@/utils/date.utils'
 import { BUTTON_BACKGROUND_COLORS } from '@/constants/colors.constants'
 import FundCard from '@/components/FundCard.vue'
-import router from '@/router'
 import { ROUTE_NAMES } from '@/router/router.constants'
 
 ChartJS.register(ArcElement)
