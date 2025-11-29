@@ -172,6 +172,7 @@ onBeforeMount(async () => {
     balance.value = response.currentBalance
     iconName.value = response.icon.replace('mdi-', '')
     isDefault.value = response.isDefault || false
+    currency.value = currencies.find(c => c.code === response.currency)
   }
 })
 

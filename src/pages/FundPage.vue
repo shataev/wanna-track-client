@@ -12,7 +12,7 @@
       <template #title>
         <div class="d-flex justify-space-between">
           <span>{{ fund.name }}</span>
-          <span>{{ fund.currentBalance }} &#xE3F;</span>
+          <span>{{ fund.currentBalance }} {{ currencySymbol }}</span>
         </div>
       </template>
 
