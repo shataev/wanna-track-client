@@ -25,7 +25,10 @@ export default defineStore('currencies', {
     }
   },
   getters: {
-    getCurrencies: (state) => state.currencies
+    getCurrencies: (state) => state.currencies,
+    getCurrencyByCode: (state) => (code) => {
+      return state.currencies.find(currency => currency.code === code)
+    }
   }
 })
 
