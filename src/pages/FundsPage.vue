@@ -10,7 +10,12 @@
     />
   </div>-->
   <div class="funds-total text-center text-white font-weight-medium text-h4 mb-4">
-    {{ total }} &#xE3F;
+    <template v-if="total">
+      {{ total.amount }} {{ totalCurrencySymbol }}
+    </template>
+    <template v-else>
+      0
+    </template>
   </div>
 
   <div class="values">
@@ -30,6 +35,7 @@ import chroma from 'chroma-js'
 import { Chart as ChartJS, ArcElement } from 'chart.js'
 import sendRequest from '@/api/sendRequest'
 import useUserStore from '@/stores/user'
+import useCurrenciesStore from '@/stores/currencies'
 import { mapStores } from 'pinia'
 import { getCurrentMonthRange } from '@/utils/date.utils'
 import { BUTTON_BACKGROUND_COLORS } from '@/constants/colors.constants'
@@ -66,27 +72,20 @@ export default {
   data() {
     return {
       funds: [],
-      dateFilter: {
-        periodName: 'month',
-        dates: getCurrentMonthRange()
-      },
-      chartOptions: {
-        responsive: true,
-        maintainAspectRatio: false,
-        cutout: '60%'
-      },
-      chartPlugins: [centerText]
-    }
-  },
-  watch: {
-    async 'dateFilter.dates'() {
-      await this.fetchExpenses()
+      total: null,
     }
   },
   computed: {
     ...mapStores(useUserStore),
-    total() {
-      return this.funds.reduce((acc, fund) => acc + fund.currentBalance, 0)
+    currenciesStore() {
+      return useCurrenciesStore()
+    },
+    totalCurrencySymbol() {
+      if (!this.total || !this.total.currency) {
+        return ''
+      }
+      const currency = this.currenciesStore.getCurrencyByCode(this.total.currency)
+      return currency?.symbol || this.total.currency
     },
     colors() {
       const scale = chroma
@@ -140,7 +139,7 @@ export default {
       })
     },
     async fetchFunds() {
-      const funds = await sendRequest({
+      const response = await sendRequest({
         url: '/api/funds',
         method: 'get',
         params: {
@@ -148,7 +147,8 @@ export default {
         }
       })
 
-      this.funds = funds
+      this.funds = response.funds
+      this.total = response.total
     }
   },
   async beforeMount() {
