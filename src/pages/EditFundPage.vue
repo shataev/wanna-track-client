@@ -22,9 +22,6 @@
           <label class="form-label text-app-light d-flex flex-column">
             <span class="label-text mb-1">Currency {{ currency?.symbol || '' }}</span>
             <vee-field name="currency" v-model="currency" v-slot="{ field, value, errors }">
-              {{ field }}
-              {{ errors }}
-              {{ value }}
               <v-select
                 :items="currencies"
                 return-object
