@@ -20,18 +20,21 @@
 
         <div class="form-element-wrapper mb-4">
           <label class="form-label text-app-light d-flex flex-column">
-            <span class="label-text mb-1">Currency {{ currency.symbol }}</span>
-            <v-select
-              v-model="currency"
-              return-object
-              name="currency"
-              :items="currencies"
-              item-title="name"
-              class="form-element form-element-input text-app-light"
-              variant="outlined"
-              hide-details="auto"
-              bg-color="transparent"
-            ></v-select>
+            <span class="label-text mb-1">Currency {{ currency?.symbol || '' }}</span>
+            <vee-field name="currency" v-slot="{ field, errors }">
+              <v-select
+                :items="currencies"
+                v-model="currency"
+                return-object
+                item-title="name"
+                class="form-element form-element-input text-app-light"
+                variant="outlined"
+                hide-details="auto"
+                bg-color="transparent"
+                v-bind="field"
+                :error-messages="errors"
+              ></v-select>
+          </vee-field>
           </label>
         </div>
 
@@ -152,7 +155,8 @@ const currencies = [
 ];
 
 const validationSchema = {
-  fundName: 'required|min:3|max:200'
+  fundName: 'required|min:3|max:200',
+  currency: 'required',
 }
 
 const getIconByName = (name) => {
