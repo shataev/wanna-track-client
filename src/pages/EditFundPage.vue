@@ -20,6 +20,23 @@
 
         <div class="form-element-wrapper mb-4">
           <label class="form-label text-app-light d-flex flex-column">
+            <span class="label-text mb-1">Currency {{ currency.symbol }}</span>
+            <v-select
+              v-model="currency"
+              return-object
+              name="currency"
+              :items="currencies"
+              item-title="name"
+              class="form-element form-element-input text-app-light"
+              variant="outlined"
+              hide-details="auto"
+              bg-color="transparent"
+            ></v-select>
+          </label>
+        </div>
+
+        <div class="form-element-wrapper mb-4">
+          <label class="form-label text-app-light d-flex flex-column">
             <span class="label-text mb-1">Balance</span>
             <app-input-with-validation
               type="number"
@@ -114,12 +131,25 @@ const route = useRoute()
 const { user } = useUserStore()
 
 const fundName = ref('')
+const currency = ref('')
 const balance = ref('')
 const iconName = ref('')
 const description = ref('')
 const isDefault = ref(false)
 const fundId = computed(() => route.params.id)
 const isEditMode = computed(() => !!fundId.value)
+
+const currencies = [
+  { code: "USD", name: "US Dollar", symbol: "$" },
+  { code: "EUR", name: "Euro", symbol: "€" },
+  { code: "THB", name: "Thai Baht", symbol: "฿" },
+  { code: "JPY", name: "Japanese Yen", symbol: "¥" },
+  { code: "GBP", name: "British Pound", symbol: "£" },
+  { code: "AUD", name: "Australian Dollar", symbol: "A$" },
+  { code: "CHF", name: "Swiss Franc", symbol: "CHF" },
+  { code: "CNY", name: "Chinese Yuan", symbol: "¥" },
+  { code: "RUB", name: "Russian Ruble", symbol: "₽" }
+];
 
 const validationSchema = {
   fundName: 'required|min:3|max:200'
@@ -142,6 +172,7 @@ onBeforeMount(async () => {
     balance.value = response.currentBalance
     iconName.value = response.icon.replace('mdi-', '')
     isDefault.value = response.isDefault || false
+    currency.value = currencies.find(c => c.code === response.currency)
   }
 })
 
@@ -151,7 +182,8 @@ const handleSubmit = async () => {
     name: fundName.value,
     description: description.value,
     icon: getIconByName(iconName.value),
-    isDefault: isDefault.value
+    isDefault: isDefault.value,
+    currency: currency.value.code
   }
 
   if (isEditMode.value) {

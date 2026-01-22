@@ -110,7 +110,8 @@ router.beforeEach(async (to, from) => {
     userStore.user = {
       email: user.email,
       id: user.id,
-      username: user.username
+      username: user.username,
+      defaultCurrency: user.defaultCurrency
     }
   }
 

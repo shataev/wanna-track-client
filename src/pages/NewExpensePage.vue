@@ -233,7 +233,7 @@ export default {
     }
   },
   async beforeMount() {
-    const [categories, funds] = await Promise.all([
+    const [categories, fundsResponse] = await Promise.all([
       sendRequest({
         url: '/api/category',
         method: 'get',
@@ -253,7 +253,7 @@ export default {
     this.categories = categories
     this.funds = [
       { _id: null, name: 'No fund', isDefault: false },
-      ...funds
+      ...fundsResponse.funds
     ]
     
     // Set default fund if exists

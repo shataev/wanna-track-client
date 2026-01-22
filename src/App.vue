@@ -8,10 +8,15 @@
   </v-container>
 </template>
 
-<script>
-export default {
-  name: 'App'
-}
+<script setup>
+import { onMounted } from 'vue'
+import useCurrenciesStore from '@/stores/currencies'
+
+const currenciesStore = useCurrenciesStore()
+
+onMounted(async () => {
+  await currenciesStore.fetchCurrencies()
+})
 </script>
 
 <style scoped>

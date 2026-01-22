@@ -80,7 +80,8 @@ export default {
         accessToken,
         id,
         email,
-        username: name
+        username: name,
+        defaultCurrency
       } = await sendRequest({
         url: '/api/auth/signin',
         method: 'post',
@@ -94,7 +95,8 @@ export default {
       this.userStore.user = {
         id,
         email,
-        name
+        name,
+        defaultCurrency
       }
 
       localStorage.setItem(WANNA_TRACK_ACCESS_TOKEN, accessToken)
