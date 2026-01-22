@@ -3,6 +3,7 @@ import sendRequest from '@/api/sendRequest'
 export interface Currency {
   code: string
   name: string
+  symbol: string
 }
 
 export interface CurrenciesResponse {
