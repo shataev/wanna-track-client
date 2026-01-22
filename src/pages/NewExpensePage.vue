@@ -62,7 +62,7 @@
                 ></v-btn>
               </div>
             </div>
-            <category-buttons :categories="categories" v-model="category" />
+            <category-buttons :categories="categories" v-model="category" :key="categoryKey" />
           </label>
         </div>
 
@@ -131,6 +131,7 @@ export default {
         ...ALERT_INITIAL_STATE
       },
       categories: [],
+      categoryKey: Date.now(),
       amount: null,
       category: null,
       date: new Date(),
@@ -185,7 +186,8 @@ export default {
           }
         })
 
-        resetForm()
+        resetForm();
+        this.categoryKey = Date.now();
         this.alert = {
           type: 'success',
           text: 'Created!',
