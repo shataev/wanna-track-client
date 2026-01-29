@@ -16,6 +16,7 @@ import NewCategoryPage from '@/pages/NewCategoryPage.vue'
 import FundsPage from '@/pages/FundsPage.vue'
 import FundPage from '@/pages/FundPage.vue'
 import EditFundPage from '@/pages/EditFundPage.vue'
+import ProfilePage from '@/pages/ProfilePage.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -85,6 +86,11 @@ const router = createRouter({
       path: '/funds/transfer',
       name: ROUTE_NAMES.FUND_TRANSFER,
       component: () => import('@/pages/TransferFundPage.vue')
+    },
+    {
+      path: '/profile',
+      name: ROUTE_NAMES.PROFILE,
+      component: ProfilePage
     }
   ]
 })
