@@ -117,7 +117,9 @@ router.beforeEach(async (to, from) => {
       email: user.email,
       id: user.id,
       username: user.username,
-      defaultCurrency: user.defaultCurrency
+      defaultCurrency: user.defaultCurrency,
+      telegramId: user.telegramId,
+      verified: user.verified
     }
   }
 
