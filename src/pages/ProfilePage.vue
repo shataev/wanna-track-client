@@ -62,6 +62,7 @@
           </template>
           <template v-else>
             <app-button
+              v-if="!bindingLink"
               class="telegram-link-button"
               :loading="bindingLinkLoading"
               :disabled="bindingLinkLoading"
