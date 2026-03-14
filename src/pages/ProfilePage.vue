@@ -125,7 +125,7 @@ async function fetchTelegramBindingLink() {
   bindingLinkExpires.value = null
   try {
     const data = await sendRequest({
-      url: '/api/auth/telegram-binding-link',
+      url: '/api/telegram/telegram-binding-link',
       method: 'get',
     })
     bindingLink.value = data.link
