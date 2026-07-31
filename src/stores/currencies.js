@@ -1,6 +1,10 @@
 import { defineStore } from 'pinia'
 import { fetchCurrencies } from '@/services/currenciesService'
 
+// Shared between concurrent callers, so the list is requested only once
+// even when a page awaits it before App.vue has finished loading it
+let pendingRequest = null
+
 export default defineStore('currencies', {
   state() {
     return {
@@ -14,9 +18,14 @@ export default defineStore('currencies', {
         return
       }
 
+      if (!pendingRequest) {
+        pendingRequest = fetchCurrencies().finally(() => {
+          pendingRequest = null
+        })
+      }
+
       try {
-        const data = await fetchCurrencies()
-        this.currencies = data
+        this.currencies = await pendingRequest
         this.isLoaded = true
       } catch (error) {
         console.error('Error fetching currencies:', error)
