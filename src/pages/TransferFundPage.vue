@@ -63,6 +63,17 @@
             <div v-if="amount && selectedSourceFund" class="mt-2 text-app-light text-subtitle-1">
               Remaining balance: {{ formatFundAmount(remainingBalance, selectedSourceFund) }}
             </div>
+
+            <div v-if="conversion" class="mt-2 text-app-light text-subtitle-1">
+              <template v-if="conversion.credited !== null">
+                {{ selectedTargetFund.name }} will receive
+                {{ formatFundAmount(conversion.credited, selectedTargetFund) }}
+              </template>
+              <template v-else>
+                No exchange rate for {{ selectedSourceFund.currency }} &rarr;
+                {{ selectedTargetFund.currency }}, this transfer will fail
+              </template>
+            </div>
           </label>
         </div>
 
@@ -78,7 +89,11 @@ import AppButton from '@/components/AppButton.vue'
 import { useRequest } from '@/composables/useRequest'
 import useUserStore from '@/stores/user'
 import useCurrenciesStore from '@/stores/currencies'
-import { formatAmount } from '@/utils/currency.utils'
+import {
+  formatAmount,
+  getConversionRate,
+  roundToCurrencyPrecision
+} from '@/utils/currency.utils'
 import { useRouter, useRoute } from 'vue-router'
 import { ref, computed, onBeforeMount, reactive } from 'vue'
 import { useForm } from 'vee-validate'
@@ -90,6 +105,7 @@ const currenciesStore = useCurrenciesStore()
 const route = useRoute()
 
 const funds = ref([])
+const rates = ref(null)
 
 const selectedSourceFund = computed(() => {
   return funds.value.find(fund => fund._id === sourceFund.value);
@@ -102,6 +118,26 @@ const selectedTargetFund = computed(() => {
 const availableTargetFunds = computed(() => {
   return funds.value.filter(fund => fund._id !== sourceFund.value);
 });
+
+// The API converts on its own, this only shows what is about to happen
+const conversion = computed(() => {
+  const source = selectedSourceFund.value
+  const target = selectedTargetFund.value
+
+  if (!source || !target || !amount.value || source.currency === target.currency) {
+    return null
+  }
+
+  const rate = getConversionRate(source.currency, target.currency, rates.value?.rates, rates.value?.base)
+
+  if (!rate) {
+    return { credited: null }
+  }
+
+  return {
+    credited: roundToCurrencyPrecision(Number(amount.value) * rate, target.currency)
+  }
+})
 
 const formatFundAmount = (amount, fund) => {
   const symbol = currenciesStore.getSymbolByCode(fund?.currency)
@@ -148,6 +184,14 @@ onBeforeMount(async () => {
   });
 
   funds.value = response.funds;
+
+  // Only needed to preview the converted amount; a missing rates document
+  // must not keep the page from working
+  try {
+    rates.value = await fetchData({ url: '/api/exchange-rates/current', method: 'get' });
+  } catch (error) {
+    console.warn('[TransferFundPage] exchange rates are not available', error);
+  }
 
   resetForm({ values: {
     sourceFund: route.query.sourceFundId,
