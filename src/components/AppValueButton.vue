@@ -12,12 +12,16 @@
       <span class="name">{{ name }}</span>
     </template>
     <template #append>
-      <span class="value">{{ value }} &#xE3F;</span>
+      <span class="value">{{ formattedValue }}</span>
     </template>
   </v-btn>
 </template>
 
 <script>
+import { mapStores } from 'pinia'
+import useCurrenciesStore from '@/stores/currencies'
+import { formatAmount } from '@/utils/currency.utils'
+
 export default {
   name: 'AppValueButton',
   props: {
@@ -33,6 +37,10 @@ export default {
       type: Number,
       required: true
     },
+    currency: {
+      type: String,
+      default: ''
+    },
     color: {
       type: String,
       required: true,
@@ -44,6 +52,13 @@ export default {
     }
   },
   computed: {
+    ...mapStores(useCurrenciesStore),
+    formattedValue() {
+      const amount = formatAmount(this.value, this.currency)
+      const symbol = this.currenciesStore.getSymbolByCode(this.currency)
+
+      return symbol ? `${amount} ${symbol}` : amount
+    },
     progressLayoutStyles() {
       return {
         background: `linear-gradient(90deg, ${this.color}, transparent)`,

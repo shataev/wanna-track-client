@@ -17,7 +17,7 @@
                 @update:model-value="setSourceFundValue"
               />
             <div v-if="selectedSourceFund" class="mt-2 text-app-light text-subtitle-1">
-              Available balance: {{ selectedSourceFund.currentBalance }} &#xE3F;
+              Available balance: {{ formatFundAmount(selectedSourceFund.currentBalance, selectedSourceFund) }}
             </div>
           </label>
         </div>
@@ -38,7 +38,7 @@
                 @update:model-value="setFieldValue('targetFund', $event)"
               ></v-select>
             <div v-if="selectedTargetFund" class="mt-2 text-app-light text-subtitle-1">
-              Current balance: {{ selectedTargetFund.currentBalance }} &#xE3F;
+              Current balance: {{ formatFundAmount(selectedTargetFund.currentBalance, selectedTargetFund) }}
             </div>
           </label>
         </div>
@@ -61,7 +61,7 @@
               ></app-input>
 
             <div v-if="amount && selectedSourceFund" class="mt-2 text-app-light text-subtitle-1">
-              Remaining balance: {{ remainingBalance }} &#xE3F;
+              Remaining balance: {{ formatFundAmount(remainingBalance, selectedSourceFund) }}
             </div>
           </label>
         </div>
@@ -77,6 +77,8 @@ import AppInput from '@/components/AppInput.vue'
 import AppButton from '@/components/AppButton.vue'
 import { useRequest } from '@/composables/useRequest'
 import useUserStore from '@/stores/user'
+import useCurrenciesStore from '@/stores/currencies'
+import { formatAmount } from '@/utils/currency.utils'
 import { useRouter, useRoute } from 'vue-router'
 import { ref, computed, onBeforeMount, reactive } from 'vue'
 import { useForm } from 'vee-validate'
@@ -84,6 +86,7 @@ import { useForm } from 'vee-validate'
 const { loading, fetchData } = useRequest()
 const router = useRouter()
 const { user } = useUserStore()
+const currenciesStore = useCurrenciesStore()
 const route = useRoute()
 
 const funds = ref([])
@@ -99,6 +102,12 @@ const selectedTargetFund = computed(() => {
 const availableTargetFunds = computed(() => {
   return funds.value.filter(fund => fund._id !== sourceFund.value);
 });
+
+const formatFundAmount = (amount, fund) => {
+  const symbol = currenciesStore.getSymbolByCode(fund?.currency)
+
+  return `${formatAmount(amount, fund?.currency)} ${symbol}`.trim()
+}
 
 const remainingBalance = computed(() => {
   if (!selectedSourceFund.value || !amount.value) return 0;
@@ -138,7 +147,7 @@ onBeforeMount(async () => {
     }
   });
 
-  funds.value = response;
+  funds.value = response.funds;
 
   resetForm({ values: {
     sourceFund: route.query.sourceFundId,

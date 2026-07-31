@@ -1,7 +1,7 @@
 <template>
   <header class="d-flex mb-6">
     <v-btn
-      @click="logout"
+      :to="{ name: ROUTE_NAMES.PROFILE }"
       class="bg-app-yellow-lighter"
       color="app-green-lighter"
       icon
@@ -10,7 +10,7 @@
       width="37"
       elevation="0"
     >
-      <v-icon class="logout-icon"> mdi-logout </v-icon>
+      <v-icon> mdi-account </v-icon>
     </v-btn>
     <h1 class="flex-grow-1 text-center text-app-light title">Home</h1>
     <v-btn
@@ -53,20 +53,14 @@
 
 <script>
 import { ROUTE_NAMES } from '@/router/router.constants'
-import sendRequest from '@/api/sendRequest'
-import { WANNA_TRACK_ACCESS_TOKEN } from '@/constants'
-import useAuthStore from '@/stores/auth'
-import { mapStores } from 'pinia'
 
 export default {
   name: 'HomeView',
   data() {
     return {
-      tab: 'expenses'
+      tab: 'expenses',
+      ROUTE_NAMES
     }
-  },
-  computed: {
-    ...mapStores(useAuthStore)
   },
   methods: {
     tabClass(value) {
@@ -75,22 +69,6 @@ export default {
     goToAddItem() {
       const routeName = this.tab === 'expenses' ? ROUTE_NAMES.NEW_EXPENSE : ROUTE_NAMES.NEW_FUND
       this.$router.push({ name: routeName })
-    },
-    async logout() {
-      await sendRequest({
-        url: '/api/auth/signout',
-        method: 'post',
-        body: {
-          email: this.email,
-          password: this.password
-        }
-      })
-
-      this.authStore.accessToken = null
-
-      localStorage.removeItem(WANNA_TRACK_ACCESS_TOKEN)
-
-      this.$router.push('/')
     }
   }
 }
@@ -100,10 +78,6 @@ export default {
 .title {
   font-size: 30px;
   font-weight: 400;
-}
-
-.logout-icon {
-  transform: rotateZ(180deg) translateX(2px);
 }
 
 .app-tabs {

@@ -21,19 +21,29 @@
         <div class="form-element-wrapper mb-4">
           <label class="form-label text-app-light d-flex flex-column">
             <span class="label-text mb-1">Currency {{ currency?.symbol || '' }}</span>
-            <vee-field name="currency" v-model="currency" v-slot="{ field, value, errors }">
-              <v-select
+            <vee-field
+              name="currency"
+              v-model="currency"
+              v-slot="{ value, errors, handleChange, handleBlur }"
+            >
+              <v-autocomplete
+                name="currency"
                 :items="currencies"
                 return-object
-                item-title="name"
+                item-title="title"
+                item-value="code"
+                :loading="!currenciesStore.isLoaded"
                 :model-value="value"
+                placeholder="Search by code or name"
+                auto-select-first
                 class="form-element form-element-input text-app-light"
                 variant="outlined"
                 hide-details="auto"
                 bg-color="transparent"
-                v-bind="field"
                 :error-messages="errors"
-              ></v-select>
+                @update:model-value="handleChange"
+                @blur="handleBlur"
+              ></v-autocomplete>
           </vee-field>
           </label>
         </div>
@@ -125,13 +135,15 @@ import AppInputWithValidation from '@/components/AppInputWithValidation.vue'
 import AppButton from '@/components/AppButton.vue'
 import { useRequest } from '@/composables/useRequest'
 import useUserStore from '@/stores/user'
+import useCurrenciesStore from '@/stores/currencies'
 import { useRoute, useRouter } from 'vue-router'
-import { computed, onBeforeMount, onMounted, ref } from 'vue'
+import { computed, onBeforeMount, ref } from 'vue'
 
 const { loading, fetchData } = useRequest()
 const router = useRouter()
 const route = useRoute()
 const { user } = useUserStore()
+const currenciesStore = useCurrenciesStore()
 
 const fundName = ref('')
 const currency = ref('')
@@ -142,17 +154,14 @@ const isDefault = ref(false)
 const fundId = computed(() => route.params.id)
 const isEditMode = computed(() => !!fundId.value)
 
-const currencies = [
-  { code: "USD", name: "US Dollar", symbol: "$" },
-  { code: "EUR", name: "Euro", symbol: "€" },
-  { code: "THB", name: "Thai Baht", symbol: "฿" },
-  { code: "JPY", name: "Japanese Yen", symbol: "¥" },
-  { code: "GBP", name: "British Pound", symbol: "£" },
-  { code: "AUD", name: "Australian Dollar", symbol: "A$" },
-  { code: "CHF", name: "Swiss Franc", symbol: "CHF" },
-  { code: "CNY", name: "Chinese Yuan", symbol: "¥" },
-  { code: "RUB", name: "Russian Ruble", symbol: "₽" }
-];
+// Title carries the code as well, so the autocomplete can be searched
+// both by code ("VND") and by name ("Vietnamese Dong")
+const currencies = computed(() =>
+  currenciesStore.getCurrencies.map((item) => ({
+    ...item,
+    title: `${item.code} — ${item.name}`
+  }))
+)
 
 const validationSchema = {
   fundName: 'required|min:3|max:200',
@@ -168,6 +177,15 @@ const getIconByName = (name) => {
 }
 
 onBeforeMount(async () => {
+  // App.vue loads currencies in onMounted, which runs after this hook,
+  // so on a direct page load the list has to be awaited here.
+  // A failed list must not block the rest of the form from loading.
+  try {
+    await currenciesStore.fetchCurrencies()
+  } catch {
+    // already logged in the store
+  }
+
   if (isEditMode.value) {
     const response = await fetchData({ url: `/api/funds/${fundId.value}`, method: 'get' })
 
@@ -176,7 +194,7 @@ onBeforeMount(async () => {
     balance.value = response.currentBalance
     iconName.value = response.icon.replace('mdi-', '')
     isDefault.value = response.isDefault || false
-    currency.value = currencies.find(c => c.code === response.currency)
+    currency.value = currencies.value.find(c => c.code === response.currency)
   }
 })
 
@@ -187,7 +205,7 @@ const handleSubmit = async () => {
     description: description.value,
     icon: getIconByName(iconName.value),
     isDefault: isDefault.value,
-    currency: currency.value.code
+    currency: currency.value?.code
   }
 
   if (isEditMode.value) {

@@ -17,6 +17,6 @@ export const fetchCurrencies = async (): Promise<Currency[]> => {
     method: 'GET'
   }) as CurrenciesResponse
 
-  return response.currencies
+  return response?.currencies ?? []
 }
 
