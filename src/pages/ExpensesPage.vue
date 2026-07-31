@@ -23,6 +23,7 @@
       :icon="expense.icon"
       :name="expense.category"
       :value="expense.amount"
+      :currency="expense.currency"
       :color="expense.color || getButtonBackgroundColor(index)"
       :progress="1"
     >
@@ -37,9 +38,11 @@ import { Chart as ChartJS, ArcElement } from 'chart.js'
 import AppValueButton from '@/components/AppValueButton.vue'
 import sendRequest from '@/api/sendRequest'
 import useUserStore from '@/stores/user'
+import useCurrenciesStore from '@/stores/currencies'
 import { mapStores } from 'pinia'
 import DateFilter from '@/components/DateFilter.vue'
 import { getCurrentMonthRange } from '@/utils/date.utils'
+import { formatAmount } from '@/utils/currency.utils'
 import { BUTTON_BACKGROUND_COLORS } from '@/constants/colors.constants'
 
 ChartJS.register(ArcElement)
@@ -58,11 +61,19 @@ const centerText = {
       return acc + current
     }, 0)
 
+    // The plugin instance is created once, so the currency has to be read
+    // from the options on every draw rather than captured up front
+    const { currency = '', symbol = '' } = chart.options.plugins?.centerText ?? {}
+
     ctx.save()
     ctx.font = `bold ${fontSize}px Roboto`
     ctx.fillStyle = '#F6FDEB'
     ctx.textAlign = 'center'
-    ctx.fillText(`${totalValue} \u0E3F`, width / 2, (height + top + fontSize) / 2)
+    ctx.fillText(
+      `${formatAmount(totalValue, currency)} ${symbol}`.trim(),
+      width / 2,
+      (height + top + fontSize) / 2
+    )
   }
 }
 
@@ -76,11 +87,6 @@ export default {
         periodName: 'month',
         dates: getCurrentMonthRange()
       },
-      chartOptions: {
-        responsive: true,
-        maintainAspectRatio: false,
-        cutout: '60%'
-      },
       chartPlugins: [centerText]
     }
   },
@@ -90,9 +96,26 @@ export default {
     }
   },
   computed: {
-    ...mapStores(useUserStore),
+    ...mapStores(useUserStore, useCurrenciesStore),
     total() {
       return this.expenses.reduce((acc, expense) => acc + expense.amount, 0)
+    },
+    // The API converts every category into the user's base currency
+    displayCurrency() {
+      return this.expenses[0]?.currency || this.userStore.user?.defaultCurrency || ''
+    },
+    chartOptions() {
+      return {
+        responsive: true,
+        maintainAspectRatio: false,
+        cutout: '60%',
+        plugins: {
+          centerText: {
+            currency: this.displayCurrency,
+            symbol: this.currenciesStore.getSymbolByCode(this.displayCurrency)
+          }
+        }
+      }
     },
     colors() {
       // Создаем шкалу на основе этих цветов

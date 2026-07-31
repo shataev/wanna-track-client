@@ -10,7 +10,7 @@
     <template #title>
       <div class="d-flex justify-space-between">
         <span>{{ fund.name }}</span>
-        <span>{{ fund.currentBalance }} {{ currencySymbol }}</span>
+        <span>{{ formatAmount(fund.currentBalance, fund.currency) }} {{ currencySymbol }}</span>
       </div>
     </template>
 
@@ -33,6 +33,7 @@ import { computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { ROUTE_NAMES } from '@/router/router.constants'
 import useCurrenciesStore from '@/stores/currencies'
+import { formatAmount } from '@/utils/currency.utils'
 
 const router = useRouter()
 const currenciesStore = useCurrenciesStore()
@@ -41,13 +42,7 @@ const props = defineProps({
   fund: {}
 })
 
-const currencySymbol = computed(() => {
-  if (!props.fund?.currency) {
-    return ''
-  }
-  const currency = currenciesStore.getCurrencyByCode(props.fund.currency)
-  return currency?.symbol || props.fund.currency
-})
+const currencySymbol = computed(() => currenciesStore.getSymbolByCode(props.fund?.currency))
 
 const handleTransfer = () => {
   router.push({

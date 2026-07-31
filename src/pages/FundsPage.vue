@@ -11,7 +11,7 @@
   </div>-->
   <div class="funds-total text-center text-white font-weight-medium text-h4 mb-4">
     <template v-if="total">
-      {{ total.amount }} {{ totalCurrencySymbol }}
+      {{ formatAmount(total.amount, total.currency) }} {{ totalCurrencySymbol }}
     </template>
     <template v-else>
       0
@@ -41,6 +41,7 @@ import { getCurrentMonthRange } from '@/utils/date.utils'
 import { BUTTON_BACKGROUND_COLORS } from '@/constants/colors.constants'
 import FundCard from '@/components/FundCard.vue'
 import { ROUTE_NAMES } from '@/router/router.constants'
+import { formatAmount } from '@/utils/currency.utils'
 
 ChartJS.register(ArcElement)
 
@@ -81,11 +82,7 @@ export default {
       return useCurrenciesStore()
     },
     totalCurrencySymbol() {
-      if (!this.total || !this.total.currency) {
-        return ''
-      }
-      const currency = this.currenciesStore.getCurrencyByCode(this.total.currency)
-      return currency?.symbol || this.total.currency
+      return this.currenciesStore.getSymbolByCode(this.total?.currency)
     },
     colors() {
       const scale = chroma
@@ -118,6 +115,7 @@ export default {
     }
   },
   methods: {
+    formatAmount,
     getButtonBackgroundColor(index) {
       return this.colors[index]
     },

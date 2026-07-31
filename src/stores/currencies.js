@@ -37,6 +37,17 @@ export default defineStore('currencies', {
     getCurrencies: (state) => state.currencies,
     getCurrencyByCode: (state) => (code) => {
       return state.currencies.find(currency => currency.code === code)
+    },
+    // Falls back to the code itself, so an amount is never left bare
+    // while the list is still loading
+    getSymbolByCode: (state) => (code) => {
+      if (!code) {
+        return ''
+      }
+
+      const currency = state.currencies.find(item => item.code === code)
+
+      return currency?.symbol || code
     }
   }
 })

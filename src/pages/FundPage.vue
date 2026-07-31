@@ -12,7 +12,7 @@
       <template #title>
         <div class="d-flex justify-space-between">
           <span>{{ fund.name }}</span>
-          <span>{{ fund.currentBalance }} currencySymbol</span>
+          <span>{{ formatAmount(fund.currentBalance, fund.currency) }} {{ currencySymbol }}</span>
         </div>
       </template>
 
@@ -33,16 +33,21 @@
 
 <script setup>
 import InnerPageLayout from '@/layouts/InnerPageLayout.vue'
-import { onBeforeMount, ref } from 'vue'
+import { computed, onBeforeMount, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import sendRequest from '@/api/sendRequest'
 import useUserStore from '@/stores/user'
+import useCurrenciesStore from '@/stores/currencies'
+import { formatAmount } from '@/utils/currency.utils'
 
 const route = useRoute()
 const router = useRouter()
 
 const { user } = useUserStore()
+const currenciesStore = useCurrenciesStore()
 let fund = ref(null)
+
+const currencySymbol = computed(() => currenciesStore.getSymbolByCode(fund.value?.currency))
 
 const fetchFund = async () => {
   const data = await sendRequest({
