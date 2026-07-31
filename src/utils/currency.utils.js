@@ -58,3 +58,43 @@ export const formatAmount = (amount, currencyCode) => {
 
   return getFormatter(currencyCode).format(value)
 }
+
+/**
+ * Rate to convert one currency into another. Rates come from the API as
+ * "1 base currency (usually USD) = X target currency", so the conversion
+ * goes through the base.
+ *
+ * @param {string} fromCurrency
+ * @param {string} toCurrency
+ * @param {Object<string, number>} rates
+ * @param {string} baseCurrency
+ * @returns {number|null} null when either currency has no rate
+ */
+export const getConversionRate = (fromCurrency, toCurrency, rates, baseCurrency) => {
+  if (fromCurrency === toCurrency) {
+    return 1
+  }
+
+  const fromRate = fromCurrency === baseCurrency ? 1 : rates?.[fromCurrency]
+  const toRate = toCurrency === baseCurrency ? 1 : rates?.[toCurrency]
+
+  if (!fromRate || !toRate) {
+    return null
+  }
+
+  return toRate / fromRate
+}
+
+/**
+ * Rounds to the precision the currency actually has: dong to whole units,
+ * baht to hundredths.
+ *
+ * @param {number} amount
+ * @param {string} currencyCode
+ * @returns {number}
+ */
+export const roundToCurrencyPrecision = (amount, currencyCode) => {
+  const factor = 10 ** getFractionDigits(currencyCode)
+
+  return Math.round(amount * factor) / factor
+}
