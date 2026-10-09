@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+import chroma from 'chroma-js'
 import {
   buildTrendSeries,
   formatDelta,
@@ -10,9 +11,11 @@ import {
   getChange,
   getDeltaColor,
   getMonthRange,
+  getTrendColor,
+  OTHER_CATEGORY_ID,
   toPeriodQuery
 } from '@/utils/analytics.utils'
-import { DELTA_COLORS } from '@/constants/colors.constants'
+import { DELTA_COLORS, TREND_COLORS, TREND_OTHER_COLOR } from '@/constants/colors.constants'
 
 describe('getChange', () => {
   it('answers the difference and its share of the previous total', () => {
@@ -194,5 +197,24 @@ describe('formatPeriodRange', () => {
     const to = new Date(2026, 2, 1).toISOString()
 
     expect(formatPeriodRange(from, to)).toBe('Feb 1 – Feb 28')
+  })
+})
+
+describe('getTrendColor', () => {
+  // Darkest end of the page background gradient
+  const DARKEST_BACKGROUND = '#5F5B53'
+
+  it('keeps every series readable on the darkest background', () => {
+    for (const color of [...TREND_COLORS, TREND_OTHER_COLOR]) {
+      expect(chroma.contrast(color, DARKEST_BACKGROUND)).toBeGreaterThanOrEqual(3)
+    }
+  })
+
+  it('gives each of the top series its own colour and "Other" a neutral one', () => {
+    const colors = TREND_COLORS.map((_, index) => getTrendColor(`category-${index}`, index))
+
+    expect(new Set(colors).size).toBe(TREND_COLORS.length)
+    expect(getTrendColor(OTHER_CATEGORY_ID, TREND_COLORS.length)).toBe(TREND_OTHER_COLOR)
+    expect(colors).not.toContain(TREND_OTHER_COLOR)
   })
 })

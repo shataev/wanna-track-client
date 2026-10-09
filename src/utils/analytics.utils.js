@@ -1,5 +1,5 @@
 import { formatAmount } from '@/utils/currency.utils'
-import { DELTA_COLORS } from '@/constants/colors.constants'
+import { DELTA_COLORS, TREND_COLORS, TREND_OTHER_COLOR } from '@/constants/colors.constants'
 
 const MINUS = '−'
 
@@ -228,3 +228,11 @@ export const formatPeriodRange = (dateFrom, dateTo) => {
     options
   )} – ${lastIncluded.toLocaleDateString('en-US', options)}`
 }
+
+/**
+ * @param {string} id - series id from buildTrendSeries
+ * @param {number} index - position of the series
+ * @returns {string}
+ */
+export const getTrendColor = (id, index) =>
+  id === OTHER_CATEGORY_ID ? TREND_OTHER_COLOR : TREND_COLORS[index % TREND_COLORS.length]

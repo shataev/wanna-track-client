@@ -170,7 +170,6 @@ import { getCurrentMonthRange } from '@/utils/date.utils'
 import { formatAmount } from '@/utils/currency.utils'
 import { formatTag } from '@/utils/tags.utils'
 import {
-  OTHER_CATEGORY_ID,
   buildTrendSeries,
   formatDelta,
   formatMonthLabel,
@@ -181,6 +180,7 @@ import {
   getChange,
   getDeltaColor,
   getMonthRange,
+  getTrendColor,
   toPeriodQuery
 } from '@/utils/analytics.utils'
 import { fetchAnalyticsMonthly, fetchAnalyticsSummary } from '@/services/analyticsService'
@@ -188,7 +188,6 @@ import { fetchAnalyticsMonthly, fetchAnalyticsSummary } from '@/services/analyti
 ChartJS.register(BarElement, CategoryScale, LinearScale, Legend, Tooltip)
 
 const LIGHT = '#F6FDEB'
-const OTHER_COLOR = 'rgba(246, 253, 235, 0.45)'
 const GRID_COLOR = 'rgba(246, 253, 235, 0.15)'
 
 const getColors = (count) =>
@@ -242,14 +241,12 @@ export default {
       return buildTrendSeries(this.monthly?.months)
     },
     trendChartData() {
-      const colors = getColors(this.trendSeries.length)
-
       return {
         labels: this.monthly.months.map(({ month }) => formatMonthLabel(month)),
         datasets: this.trendSeries.map(({ id, name, data }, index) => ({
           label: name,
           data,
-          backgroundColor: id === OTHER_CATEGORY_ID ? OTHER_COLOR : colors[index],
+          backgroundColor: getTrendColor(id, index),
           borderRadius: 4
         }))
       }
