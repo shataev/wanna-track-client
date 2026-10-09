@@ -19,7 +19,7 @@
           </div>
 
           <div class="summary-row d-flex justify-space-between">
-            <span>vs {{ formatRange(summary.previous.dateFrom, summary.previous.dateTo) }}</span>
+            <span>vs {{ previousRange }}</span>
             <span :style="{ color: getDeltaColor(summary.total, summary.previous.total) }">
               {{ formatSignedAmount(totalChange.diff, summary.currency) }}
               <template v-if="totalChange.direction !== 'flat'">
@@ -170,16 +170,17 @@ import { getCurrentMonthRange } from '@/utils/date.utils'
 import { formatAmount } from '@/utils/currency.utils'
 import { formatTag } from '@/utils/tags.utils'
 import {
-  OTHER_CATEGORY_ID,
   buildTrendSeries,
   formatDelta,
   formatMonthLabel,
   formatPercent,
+  formatPeriodRange,
   formatSignedAmount,
   fromPeriodQuery,
   getChange,
   getDeltaColor,
   getMonthRange,
+  getTrendColor,
   toPeriodQuery
 } from '@/utils/analytics.utils'
 import { fetchAnalyticsMonthly, fetchAnalyticsSummary } from '@/services/analyticsService'
@@ -187,7 +188,6 @@ import { fetchAnalyticsMonthly, fetchAnalyticsSummary } from '@/services/analyti
 ChartJS.register(BarElement, CategoryScale, LinearScale, Legend, Tooltip)
 
 const LIGHT = '#F6FDEB'
-const OTHER_COLOR = 'rgba(246, 253, 235, 0.45)'
 const GRID_COLOR = 'rgba(246, 253, 235, 0.15)'
 
 const getColors = (count) =>
@@ -228,6 +228,9 @@ export default {
     isPeriodEmpty() {
       return Boolean(this.summary) && !this.summary.count
     },
+    previousRange() {
+      return formatPeriodRange(this.summary.previous.dateFrom, this.summary.previous.dateTo)
+    },
     totalChange() {
       return getChange(this.summary.total, this.summary.previous.total)
     },
@@ -238,14 +241,12 @@ export default {
       return buildTrendSeries(this.monthly?.months)
     },
     trendChartData() {
-      const colors = getColors(this.trendSeries.length)
-
       return {
         labels: this.monthly.months.map(({ month }) => formatMonthLabel(month)),
         datasets: this.trendSeries.map(({ id, name, data }, index) => ({
           label: name,
           data,
-          backgroundColor: id === OTHER_CATEGORY_ID ? OTHER_COLOR : colors[index],
+          backgroundColor: getTrendColor(id, index),
           borderRadius: 4
         }))
       }
@@ -311,13 +312,6 @@ export default {
         month: 'short',
         year: 'numeric'
       })
-    },
-    formatRange(dateFrom, dateTo) {
-      const options = { day: 'numeric', month: 'short' }
-
-      return `${new Date(dateFrom).toLocaleDateString('en-US', options)} – ${new Date(
-        dateTo
-      ).toLocaleDateString('en-US', options)}`
     },
     // Taken from the totals rather than the API's `share`, so the bars always add up to the total shown
     getShare(category) {
