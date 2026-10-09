@@ -43,8 +43,6 @@ import AppInputWithValidation from '@/components/AppInputWithValidation.vue'
 import sendRequest from '@/api/sendRequest'
 import { mapStores } from 'pinia'
 import useAuthStore from '@/stores/auth'
-import useUserStore from '@/stores/user'
-import { WANNA_TRACK_ACCESS_TOKEN } from '@/constants'
 
 export default {
   name: 'SignInPage',
@@ -56,7 +54,7 @@ export default {
   },
   components: { AppInputWithValidation, AuthLayout, AppButton },
   computed: {
-    ...mapStores(useAuthStore, useUserStore),
+    ...mapStores(useAuthStore),
     signUpValidationSchema() {
       return {
         email: {
@@ -76,13 +74,7 @@ export default {
   methods: {
     async sendData() {
       // TODO: add error handling and notificatios
-      const {
-        accessToken,
-        id,
-        email,
-        username: name,
-        defaultCurrency
-      } = await sendRequest({
+      const session = await sendRequest({
         url: '/api/auth/signin',
         method: 'post',
         body: {
@@ -91,15 +83,7 @@ export default {
         }
       })
 
-      this.authStore.accessToken = accessToken
-      this.userStore.user = {
-        id,
-        email,
-        name,
-        defaultCurrency
-      }
-
-      localStorage.setItem(WANNA_TRACK_ACCESS_TOKEN, accessToken)
+      this.authStore.setSession(session)
 
       this.$router.push('/expenses')
     }
