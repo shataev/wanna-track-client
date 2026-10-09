@@ -59,6 +59,9 @@
             <div class="cost-description">
               <span class="cost-date">{{ formatDate(cost.date) }}</span>
               <span v-if="cost.comment"> · {{ cost.comment }}</span>
+              <div v-if="cost.fund?.name" class="cost-fund">
+                <v-icon icon="mdi-wallet-outline" size="x-small"></v-icon> {{ cost.fund.name }}
+              </div>
             </div>
             <div class="cost-amount text-right flex-shrink-0 ml-3">
               <div>{{ formatAmount(cost.amount, cost.currency) }} {{ cost.currency }}</div>
@@ -382,6 +385,11 @@ export default {
 .cost-description {
   font-size: 15px;
   word-break: break-word;
+}
+
+.cost-fund {
+  font-size: 13px;
+  opacity: 0.8;
 }
 
 .cost-date {
