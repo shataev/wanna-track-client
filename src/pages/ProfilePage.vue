@@ -48,6 +48,45 @@
 
       <div class="form-element-wrapper mb-4">
         <label class="form-label text-app-light d-flex flex-column">
+          <span class="label-text mb-1">Active trip tag</span>
+          <v-text-field
+            v-model="activeTagInput"
+            placeholder="e.g. japan-2026"
+            prefix="#"
+            bg-color="transparent"
+            class="form-element form-element-input text-app-light"
+            variant="outlined"
+            hide-details="auto"
+            :error-messages="activeTagError"
+            :disabled="activeTagSaving"
+            @keydown.enter.prevent="saveActiveTag(activeTagInput)"
+          />
+        </label>
+        <div class="active-tag-hint text-app-light mt-2">
+          <template v-if="user?.activeTag">Every new expense gets #{{ user.activeTag }}</template>
+          <template v-else>No active tag</template>
+        </div>
+        <div class="d-flex mt-3 active-tag-actions">
+          <app-button
+            class="flex-grow-1"
+            :loading="activeTagSaving"
+            :disabled="activeTagSaving || !normalizeTag(activeTagInput) || normalizeTag(activeTagInput) === user?.activeTag"
+            @click="saveActiveTag(activeTagInput)"
+          >
+            Set
+          </app-button>
+          <app-button
+            class="flex-grow-1"
+            :disabled="activeTagSaving || !user?.activeTag"
+            @click="saveActiveTag(null)"
+          >
+            Clear
+          </app-button>
+        </div>
+      </div>
+
+      <div class="form-element-wrapper mb-4">
+        <label class="form-label text-app-light d-flex flex-column">
           <span class="label-text mb-1">Telegram ID</span>
           <template v-if="user?.telegramId">
             <v-text-field
@@ -105,7 +144,7 @@
 </template>
 
 <script setup>
-import { onBeforeUnmount, onMounted, ref } from 'vue'
+import { onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import InnerPageLayout from '@/layouts/InnerPageLayout.vue'
 import AppButton from '@/components/AppButton.vue'
 import { storeToRefs } from 'pinia'
@@ -114,9 +153,39 @@ import sendRequest from '@/api/sendRequest'
 import { refreshSession } from '@/api/http'
 import { useRouter } from 'vue-router'
 import { ROUTE_NAMES } from '@/router/router.constants'
+import { setActiveTag } from '@/services/tagsService'
+import { normalizeTag } from '@/utils/tags.utils'
 
-const { user } = storeToRefs(useUserStore())
+const userStore = useUserStore()
+const { user } = storeToRefs(userStore)
 const router = useRouter()
+
+const activeTagInput = ref(user.value?.activeTag ?? '')
+const activeTagSaving = ref(false)
+const activeTagError = ref('')
+
+// The user can arrive after this page is created (refresh on a page load)
+watch(
+  () => user.value?.activeTag,
+  (activeTag) => {
+    activeTagInput.value = activeTag ?? ''
+  }
+)
+
+async function saveActiveTag(tag) {
+  activeTagSaving.value = true
+  activeTagError.value = ''
+
+  try {
+    // The API answers the full user; merging keeps the store whole even if a field is left out
+    userStore.setUser({ ...user.value, ...(await setActiveTag(tag)) })
+  } catch (err) {
+    console.error('[ProfilePage] active-tag', err)
+    activeTagError.value = 'Could not save the tag. Please try again.'
+  } finally {
+    activeTagSaving.value = false
+  }
+}
 
 const bindingLinkLoading = ref(false)
 const bindingLink = ref('')
@@ -197,6 +266,15 @@ onBeforeUnmount(() => {
       border: none !important;
     }
   }
+}
+
+.active-tag-hint {
+  font-size: 14px;
+  opacity: 0.9;
+}
+
+.active-tag-actions {
+  gap: 12px;
 }
 
 .telegram-link-button {
