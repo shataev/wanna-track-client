@@ -13,18 +13,21 @@ export const normalizeTag = (value) => {
   }
 
   const tag = value
+    .normalize('NFC')
     .trim()
     .toLowerCase()
     .replace(/\s+/g, '-')
-    // Letters of any script, digits, '-' and '_'
-    .replace(/[^\p{L}\p{N}_-]/gu, '')
+    // Letters of any script with their combining marks (Thai vowels and tones,
+    // Devanagari matras), digits, '-' and '_'
+    .replace(/[^\p{L}\p{M}\p{N}_-]/gu, '')
 
-  return tag.length > MAX_TAG_LENGTH ? '' : tag
+  // Cut, not dropped, and by code points, so a character outside the BMP is never cut in half
+  return Array.from(tag).slice(0, MAX_TAG_LENGTH).join('')
 }
 
 /**
- * Invalid tags are dropped rather than rejected, duplicates keep their first
- * position, and only the first ten survive.
+ * Invalid tags are dropped rather than rejected, duplicates (after cutting to
+ * 32 characters) keep their first position, and only the first ten survive.
  *
  * @param {Array<*>} values
  * @returns {string[]}

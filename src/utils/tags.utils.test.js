@@ -12,18 +12,50 @@ describe('normalizeTag', () => {
     expect(normalizeTag('#japan!2026.')).toBe('japan2026')
   })
 
-  it('drops what is empty or longer than 32 characters', () => {
+  // Thai vowels and tone marks are combining marks; losing them changes the word
+  it('keeps the combining marks of Thai', () => {
+    expect(normalizeTag('พัทยา')).toBe('พัทยา')
+    expect(normalizeTag('ภูเก็ต 2026')).toBe('ภูเก็ต-2026')
+  })
+
+  it('keeps the combining marks of Devanagari', () => {
+    expect(normalizeTag('हिन्दी')).toBe('हिन्दी')
+  })
+
+  it('composes a decomposed accent instead of dropping it', () => {
+    const decomposed = 'Cafe\u0301'
+
+    expect(decomposed).toHaveLength(5)
+    expect(normalizeTag(decomposed)).toBe('caf\u00e9')
+    expect(normalizeTag(decomposed)).toBe(normalizeTag('Caf\u00e9'))
+  })
+
+  it('drops what is empty', () => {
     expect(normalizeTag('   ')).toBe('')
     expect(normalizeTag('!!!')).toBe('')
-    expect(normalizeTag('a'.repeat(32))).toBe('a'.repeat(32))
-    expect(normalizeTag('a'.repeat(33))).toBe('')
     expect(normalizeTag(null)).toBe('')
+  })
+
+  it('cuts what is longer than 32 characters', () => {
+    expect(normalizeTag('a'.repeat(32))).toBe('a'.repeat(32))
+    expect(normalizeTag('a'.repeat(33))).toBe('a'.repeat(32))
+  })
+
+  it('counts characters, not UTF-16 units, and never splits one', () => {
+    const mathLetters = '𝒜'.repeat(33)
+
+    expect(normalizeTag(mathLetters)).toBe('𝒜'.repeat(32))
+    expect(Array.from(normalizeTag('タ'.repeat(40)))).toHaveLength(32)
   })
 })
 
 describe('normalizeTags', () => {
   it('de-duplicates after normalisation, keeping the first position', () => {
     expect(normalizeTags(['Japan', 'food', ' JAPAN ', 'food'])).toEqual(['japan', 'food'])
+  })
+
+  it('de-duplicates tags that become equal once cut to 32 characters', () => {
+    expect(normalizeTags(['a'.repeat(32) + 'x', 'a'.repeat(32) + 'y'])).toEqual(['a'.repeat(32)])
   })
 
   it('drops invalid tags instead of failing', () => {
