@@ -31,6 +31,11 @@ const router = createRouter({
           path: 'funds',
           name: ROUTE_NAMES.FUNDS,
           component: FundsPage
+        },
+        {
+          path: 'analytics',
+          name: ROUTE_NAMES.ANALYTICS,
+          component: () => import('@/pages/AnalyticsPage.vue')
         }
       ]
     },

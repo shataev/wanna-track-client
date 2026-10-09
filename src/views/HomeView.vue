@@ -47,6 +47,14 @@
       :class="tabClass('funds')"
       >Savings</v-btn
     >
+    <v-btn
+      rounded="pill"
+      to="/analytics"
+      value="analytics"
+      class="app-tabs-button text-none text-app-dark"
+      :class="tabClass('analytics')"
+      >Analytics</v-btn
+    >
   </v-btn-toggle>
   <router-view />
 </template>
@@ -67,7 +75,8 @@ export default {
       return this.tab === value ? 'bg-app-yellow-lighter' : 'bg-transparent'
     },
     goToAddItem() {
-      const routeName = this.tab === 'expenses' ? ROUTE_NAMES.NEW_EXPENSE : ROUTE_NAMES.NEW_FUND
+      // Analytics has nothing of its own to add; an expense is what feeds it
+      const routeName = this.tab === 'funds' ? ROUTE_NAMES.NEW_FUND : ROUTE_NAMES.NEW_EXPENSE
       this.$router.push({ name: routeName })
     }
   }
@@ -84,7 +93,7 @@ export default {
   display: flex;
 
   &-button {
-    flex-basis: 50%;
+    flex-basis: 33.33%;
     font-size: 18px;
   }
 }

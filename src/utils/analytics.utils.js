@@ -87,7 +87,8 @@ export const formatSignedAmount = (amount, currencyCode) => {
  * @param {number} previous
  * @returns {string}
  */
-export const getDeltaColor = (current, previous) => DELTA_COLORS[getChange(current, previous).direction]
+export const getDeltaColor = (current, previous) =>
+  DELTA_COLORS[getChange(current, previous).direction]
 
 /**
  * Local start and end of a month given as 'YYYY-MM', in the shape DateFilter
@@ -156,7 +157,9 @@ export const buildTrendSeries = (months = [], limit = 6) => {
   const series = top.map(({ id, name }) => ({
     id,
     name,
-    data: months.map(({ categories = [] }) => categories.find((category) => category.id === id)?.total ?? 0)
+    data: months.map(
+      ({ categories = [] }) => categories.find((category) => category.id === id)?.total ?? 0
+    )
   }))
 
   const other = months.map(({ categories = [] }) =>

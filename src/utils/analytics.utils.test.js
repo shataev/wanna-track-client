@@ -142,7 +142,11 @@ describe('buildTrendSeries', () => {
 
   it('stacks every month up to the sum of its categories', () => {
     const months = [
-      { month: '2026-10', total: 0, categories: [category('a', 3), category('b', 4), category('c', 5)] }
+      {
+        month: '2026-10',
+        total: 0,
+        categories: [category('a', 3), category('b', 4), category('c', 5)]
+      }
     ]
 
     const stacked = buildTrendSeries(months, 1).reduce((sum, { data }) => sum + data[0], 0)
