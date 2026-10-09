@@ -233,6 +233,9 @@ export default {
         maintainAspectRatio: false,
         cutout: '60%',
         plugins: {
+          // Analytics registers the legend plugin globally; the category list
+          // below the chart already serves as this chart's legend
+          legend: { display: false },
           centerText: {
             currency: this.displayCurrency,
             symbol: this.currenciesStore.getSymbolByCode(this.displayCurrency)
