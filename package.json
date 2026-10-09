@@ -7,7 +7,8 @@
     "build": "vite build",
     "preview": "vite preview",
     "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs --fix --ignore-path .gitignore",
-    "format": "prettier --write src/"
+    "format": "prettier --write src/",
+    "test": "vitest run"
   },
   "dependencies": {
     "@vee-validate/rules": "^4.9.6",
@@ -36,7 +37,8 @@
     "eslint": "^8.39.0",
     "eslint-plugin-vue": "^9.11.0",
     "prettier": "^2.8.8",
-    "vite": "^5.4.3"
+    "vite": "^5.4.3",
+    "vitest": "^2.1.9"
   },
   "packageManager": "yarn@1.22.19+sha1.4ba7fc5c6e704fce2066ecbfb0b0d8976fe62447"
 }
