@@ -36,14 +36,12 @@ import InnerPageLayout from '@/layouts/InnerPageLayout.vue'
 import { computed, onBeforeMount, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import sendRequest from '@/api/sendRequest'
-import useUserStore from '@/stores/user'
 import useCurrenciesStore from '@/stores/currencies'
 import { formatAmount } from '@/utils/currency.utils'
 
 const route = useRoute()
 const router = useRouter()
 
-const { user } = useUserStore()
 const currenciesStore = useCurrenciesStore()
 let fund = ref(null)
 
@@ -52,10 +50,7 @@ const currencySymbol = computed(() => currenciesStore.getSymbolByCode(fund.value
 const fetchFund = async () => {
   const data = await sendRequest({
     url: `/api/funds/${route.params.id}`,
-    method: 'get',
-    params: {
-      userId: user.id
-    }
+    method: 'get'
   })
 
   fund.value = data

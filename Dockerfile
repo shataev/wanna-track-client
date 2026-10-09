@@ -3,9 +3,7 @@ FROM node:18.16.0-alpine AS build-stage
 
 # Define environment variables (if needed)
 ARG VITE_BASE_URL
-ARG VITE_VERIFICATION_CODE
 ENV VITE_BASE_URL=$VITE_BASE_URL
-ENV VITE_VERIFICATION_CODE=$VITE_VERIFICATION_CODE
 
 # Set working directory
 WORKDIR /app

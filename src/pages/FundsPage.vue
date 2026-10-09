@@ -130,19 +130,13 @@ export default {
     async deleteFund(fundId) {
       await sendRequest({
         url: `/api/funds/${fundId}`,
-        method: 'delete',
-        params: {
-          userId: this.userStore.user.id
-        }
+        method: 'delete'
       })
     },
     async fetchFunds() {
       const response = await sendRequest({
         url: '/api/funds',
-        method: 'get',
-        params: {
-          userId: this.userStore.user.id
-        }
+        method: 'get'
       })
 
       this.funds = response.funds
