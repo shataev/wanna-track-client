@@ -48,6 +48,56 @@
         </div>
 
         <div class="form-element-wrapper mb-4">
+          <label class="form-label text-app-light d-flex flex-column">
+            <span class="label-text mb-1">Currency</span>
+            <v-autocomplete
+              v-model="currency"
+              name="currency"
+              :items="currencyItems"
+              :loading="!currenciesStore.isLoaded"
+              placeholder="Search currency"
+              auto-select-first
+              class="form-element form-element-input text-app-light"
+              variant="outlined"
+              hide-details="auto"
+              bg-color="transparent"
+            ></v-autocomplete>
+          </label>
+          <div v-if="fundDebit" class="mt-2 text-app-light text-subtitle-1">
+            <template v-if="fundDebit.fundAmount !== null">
+              {{ selectedFund.name }} will be debited
+              {{ formatWithSymbol(fundDebit.fundAmount, selectedFund.currency) }}
+            </template>
+            <template v-else>
+              No exchange rate for {{ currency }} &rarr; {{ selectedFund.currency }} to preview the debit
+            </template>
+          </div>
+        </div>
+
+        <div class="form-element-wrapper mb-4">
+          <label class="form-label text-app-light d-flex flex-column">
+            <span class="label-text mb-1">Tags</span>
+            <v-combobox
+              :model-value="tags"
+              :items="tagSuggestions"
+              placeholder="Add a tag"
+              multiple
+              chips
+              closable-chips
+              class="form-element form-element-input form-element-tags text-app-light"
+              variant="outlined"
+              hide-details="auto"
+              bg-color="transparent"
+              @update:model-value="onTagsInput"
+            >
+              <template #chip="{ props, item }">
+                <v-chip v-bind="props" color="app-light" size="small">#{{ item.raw }}</v-chip>
+              </template>
+            </v-combobox>
+          </label>
+        </div>
+
+        <div class="form-element-wrapper mb-4">
           <label class="form-label text-app-light d-flex flex-column mb-1">
             <div class="d-flex justify-space-between align-center mb-1">
               <span class="label-text">Category </span>
@@ -114,6 +164,13 @@ import AppInputWithValidation from '@/components/AppInputWithValidation.vue'
 import sendRequest from '@/api/sendRequest'
 import AppDatepickerWithValidation from '@/components/AppDatepickerWithValidation.vue'
 import InnerPageLayout from '@/layouts/InnerPageLayout.vue'
+import { mapStores } from 'pinia'
+import useUserStore from '@/stores/user'
+import useCurrenciesStore from '@/stores/currencies'
+import { fetchTags } from '@/services/tagsService'
+import { normalizeTags } from '@/utils/tags.utils'
+import { buildCostRequestBody, getFundDebit } from '@/utils/expense.utils'
+import { formatAmount, orderCurrencies } from '@/utils/currency.utils'
 
 const ALERT_INITIAL_STATE = {
   type: 'success',
@@ -136,6 +193,10 @@ export default {
       comment: '',
       sourceFund: null,
       funds: [],
+      currency: null,
+      tags: [],
+      tagSuggestions: [],
+      rates: null,
       validationSchema: {
         amount: 'required|min_expense_value:1',
         category: 'required',
@@ -156,11 +217,61 @@ export default {
     AppButton
   },
   computed: {
+    ...mapStores(useUserStore, useCurrenciesStore),
+    selectedFund() {
+      return this.funds.find((fund) => fund._id === this.sourceFund) ?? null
+    },
+    // The currency the expense is booked in when the user picks nothing else
+    defaultCurrency() {
+      return this.selectedFund?.currency || this.userStore.user.defaultCurrency
+    },
+    // The user's own currencies first, so the usual choice is one tap away;
+    // the name is in the title so 'yen' finds JPY
+    currencyItems() {
+      const { preferred, others } = orderCurrencies(this.currenciesStore.getCurrencies, [
+        this.userStore.user.defaultCurrency,
+        ...this.funds.map((fund) => fund.currency)
+      ])
+
+      return [...preferred, ...others].map((item) => ({
+        title: [`${item.code} ${item.symbol || ''}`.trim(), item.name].filter(Boolean).join(' · '),
+        value: item.code
+      }))
+    },
+    fundDebit() {
+      return getFundDebit({
+        amount: this.amount,
+        currency: this.currency,
+        fundCurrency: this.selectedFund?.currency,
+        rates: this.rates
+      })
+    },
     submitButtonDisabled() {
       return this.request.pending
     }
   },
+  watch: {
+    // Every change of fund starts again from that fund's currency, even when
+    // it is the same as the previous fund's; the user can still pick another
+    sourceFund: {
+      handler() {
+        this.currency = this.defaultCurrency || null
+      },
+      immediate: true
+    }
+  },
   methods: {
+    formatWithSymbol(amount, currencyCode) {
+      return `${formatAmount(amount, currencyCode)} ${this.currenciesStore.getSymbolByCode(currencyCode)}`.trim()
+    },
+    onTagsInput(value) {
+      this.tags = normalizeTags(value)
+    },
+    resetTags() {
+      const { activeTag } = this.userStore.user
+
+      this.tags = activeTag ? [activeTag] : []
+    },
     goBack() {
       this.$router.back()
     },
@@ -173,17 +284,21 @@ export default {
         await sendRequest({
           url: '/api/cost',
           method: 'post',
-          body: {
+          body: buildCostRequestBody({
             amount,
             category,
             date: this.date,
             comment,
-            fundId: this.sourceFund
-          }
+            fundId: this.sourceFund,
+            currency: this.currency,
+            tags: this.tags
+          })
         })
 
         resetForm();
         this.categoryKey = Date.now();
+        this.currency = this.defaultCurrency || null
+        this.resetTags()
         this.alert = {
           type: 'success',
           text: 'Created!',
@@ -203,6 +318,12 @@ export default {
             this.alert = {
               type: 'error',
               text: 'Insufficient funds in the selected account. Please choose another fund or reduce the amount.',
+              isVisible: true
+            }
+          } else if (errorMessage?.startsWith('Exchange rate not found')) {
+            this.alert = {
+              type: 'error',
+              text: `No exchange rate for ${this.currency}. Please choose another currency.`,
               isVisible: true
             }
           } else {
@@ -231,6 +352,20 @@ export default {
     }
   },
   async beforeMount() {
+    this.resetTags()
+
+    // Suggestions and the debit preview only help; the page works without them
+    fetchTags()
+      .then((tags) => {
+        this.tagSuggestions = tags.map(({ tag }) => tag)
+      })
+      .catch((error) => console.warn('[NewExpensePage] tags are not available', error))
+    sendRequest({ url: '/api/exchange-rates/current', method: 'get' })
+      .then((rates) => {
+        this.rates = rates
+      })
+      .catch((error) => console.warn('[NewExpensePage] exchange rates are not available', error))
+
     const [categories, fundsResponse] = await Promise.all([
       sendRequest({
         url: '/api/category',
@@ -301,6 +436,11 @@ $border-raduis-text-field: 999px;
       border: none !important;
     }
   }
+}
+
+:deep(.form-element-tags .v-field__input) {
+  flex-wrap: wrap;
+  gap: 4px;
 }
 
 .alert {

@@ -11,7 +11,8 @@ const USER = {
   email: 'alice@example.com',
   defaultCurrency: 'EUR',
   telegramId: null,
-  verified: true
+  verified: true,
+  activeTag: null
 }
 
 const tick = () => new Promise((resolve) => setTimeout(resolve, 0))

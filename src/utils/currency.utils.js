@@ -98,3 +98,30 @@ export const roundToCurrencyPrecision = (amount, currencyCode) => {
 
   return Math.round(amount * factor) / factor
 }
+
+/**
+ * Currencies for a picker: the given codes first, in their order, then the
+ * rest by code. The API's list is in no useful order and has ~170 entries.
+ *
+ * @param {Array<{code: string}>} currencies
+ * @param {Array<string|null|undefined>} preferredCodes - e.g. the user's default
+ *   currency and then the currencies of their funds; duplicates and unknown codes are ignored
+ * @returns {{preferred: Array<{code: string}>, others: Array<{code: string}>}}
+ */
+export const orderCurrencies = (currencies, preferredCodes) => {
+  const preferred = []
+
+  for (const code of preferredCodes) {
+    const currency = currencies.find((item) => item.code === code)
+
+    if (currency && !preferred.includes(currency)) {
+      preferred.push(currency)
+    }
+  }
+
+  const others = currencies
+    .filter((item) => !preferred.includes(item))
+    .sort((a, b) => a.code.localeCompare(b.code))
+
+  return { preferred, others }
+}
