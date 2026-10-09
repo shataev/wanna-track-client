@@ -50,16 +50,18 @@
         <div class="form-element-wrapper mb-4">
           <label class="form-label text-app-light d-flex flex-column">
             <span class="label-text mb-1">Currency</span>
-            <v-select
+            <v-autocomplete
               v-model="currency"
               name="currency"
               :items="currencyItems"
               :loading="!currenciesStore.isLoaded"
+              placeholder="Search currency"
+              auto-select-first
               class="form-element form-element-input text-app-light"
               variant="outlined"
               hide-details="auto"
               bg-color="transparent"
-            ></v-select>
+            ></v-autocomplete>
           </label>
           <div v-if="fundDebit" class="mt-2 text-app-light text-subtitle-1">
             <template v-if="fundDebit.fundAmount !== null">
@@ -168,7 +170,7 @@ import useCurrenciesStore from '@/stores/currencies'
 import { fetchTags } from '@/services/tagsService'
 import { normalizeTags } from '@/utils/tags.utils'
 import { buildCostRequestBody, getFundDebit } from '@/utils/expense.utils'
-import { formatAmount } from '@/utils/currency.utils'
+import { formatAmount, orderCurrencies } from '@/utils/currency.utils'
 
 const ALERT_INITIAL_STATE = {
   type: 'success',
@@ -223,9 +225,16 @@ export default {
     defaultCurrency() {
       return this.selectedFund?.currency || this.userStore.user.defaultCurrency
     },
+    // The user's own currencies first, so the usual choice is one tap away;
+    // the name is in the title so 'yen' finds JPY
     currencyItems() {
-      return this.currenciesStore.getCurrencies.map((item) => ({
-        title: `${item.code} ${item.symbol || ''}`.trim(),
+      const { preferred, others } = orderCurrencies(this.currenciesStore.getCurrencies, [
+        this.userStore.user.defaultCurrency,
+        ...this.funds.map((fund) => fund.currency)
+      ])
+
+      return [...preferred, ...others].map((item) => ({
+        title: [`${item.code} ${item.symbol || ''}`.trim(), item.name].filter(Boolean).join(' · '),
         value: item.code
       }))
     },
@@ -242,10 +251,11 @@ export default {
     }
   },
   watch: {
-    // A new fund brings its own currency; the user can still pick another
-    defaultCurrency: {
-      handler(currency) {
-        this.currency = currency || null
+    // Every change of fund starts again from that fund's currency, even when
+    // it is the same as the previous fund's; the user can still pick another
+    sourceFund: {
+      handler() {
+        this.currency = this.defaultCurrency || null
       },
       immediate: true
     }
