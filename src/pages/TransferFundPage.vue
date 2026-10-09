@@ -87,7 +87,6 @@ import InnerPageLayout from '@/layouts/InnerPageLayout.vue'
 import AppInput from '@/components/AppInput.vue'
 import AppButton from '@/components/AppButton.vue'
 import { useRequest } from '@/composables/useRequest'
-import useUserStore from '@/stores/user'
 import useCurrenciesStore from '@/stores/currencies'
 import {
   formatAmount,
@@ -100,7 +99,6 @@ import { useForm } from 'vee-validate'
 
 const { loading, fetchData } = useRequest()
 const router = useRouter()
-const { user } = useUserStore()
 const currenciesStore = useCurrenciesStore()
 const route = useRoute()
 
@@ -177,10 +175,7 @@ const setSourceFundValue = (value) => {
 onBeforeMount(async () => {
   const response = await fetchData({
     url: '/api/funds',
-    method: 'get',
-    params: {
-      userId: user.id
-    }
+    method: 'get'
   });
 
   funds.value = response.funds;
@@ -217,7 +212,6 @@ const handleSubmitForm = handleSubmit(async (formData) => {
       url: '/api/funds/transfer',
       method: 'post',
       body: {
-        userId: user.id,
         fromFundId: sourceFund.value,
         toFundId: targetFund.value,
         amount: amountNum,

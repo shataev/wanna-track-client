@@ -7,10 +7,7 @@ import NewExpensePage from '@/pages/NewExpensePage.vue'
 import HomeView from '@/views/HomeView.vue'
 import useAuthStore from '@/stores/auth'
 import { AUTH_ROUTES, ROUTE_NAMES } from '@/router/router.constants'
-import { WANNA_TRACK_ACCESS_TOKEN } from '@/constants'
-
-import useUserStore from '@/stores/user'
-import { checkAuth } from '@/utils/auth.utils'
+import { refreshSession, setAuthFailureHandler } from '@/api/http'
 import EmailVerificationPage from '@/pages/EmailVerificationPage/EmailVerificationPage.vue'
 import NewCategoryPage from '@/pages/NewCategoryPage.vue'
 import FundsPage from '@/pages/FundsPage.vue'
@@ -95,35 +92,28 @@ const router = createRouter({
   ]
 })
 
-router.beforeEach(async (to, from) => {
-  const authStore = useAuthStore()
-  const userStore = useUserStore()
-
-  const accessToken = localStorage.getItem(WANNA_TRACK_ACCESS_TOKEN)
-
-  const user = await checkAuth(accessToken)
-
-  if (to.name === ROUTE_NAMES.EMAIL_VERIFICATION) {
+router.beforeEach(async (to) => {
+  if (to.name === ROUTE_NAMES.EMAIL_VERIFICATION || AUTH_ROUTES.includes(to.name)) {
     return true
   }
 
-  if (!user && !AUTH_ROUTES.includes(to.name)) {
+  const authStore = useAuthStore()
+
+  // Once a token is in memory, an expired one is renewed by the http
+  // interceptor on its first 401, so navigation never waits on the API
+  if (authStore.accessToken) {
+    return true
+  }
+
+  try {
+    await refreshSession()
+
+    return true
+  } catch {
     return { name: ROUTE_NAMES.SIGN_IN }
   }
-
-  if (user) {
-    authStore.accessToken = user.accessToken
-    userStore.user = {
-      email: user.email,
-      id: user.id,
-      username: user.username,
-      defaultCurrency: user.defaultCurrency,
-      telegramId: user.telegramId,
-      verified: user.verified
-    }
-  }
-
-  return true
 })
+
+setAuthFailureHandler(() => router.push({ name: ROUTE_NAMES.SIGN_IN }))
 
 export default router

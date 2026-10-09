@@ -3,12 +3,10 @@ import InnerPageLayout from '@/layouts/InnerPageLayout.vue'
 import AppInputWithValidation from '@/components/AppInputWithValidation.vue'
 import AppButton from '@/components/AppButton.vue'
 import { useRequest } from '@/composables/useRequest'
-import useUserStore from '@/stores/user'
 import { useRouter } from 'vue-router'
 
 const { loading, fetchData } = useRequest()
 const router = useRouter()
-const { user } = useUserStore()
 
 const validationSchema = {
   name: 'required|min:3|max:200',
@@ -28,7 +26,6 @@ const getIconByName = (name) => {
 
 const createCategory = async () => {
   const requestBody = {
-    userId: user.id,
     name: categoryName,
     icon: getIconByName(iconName)
   }

@@ -1,23 +1,12 @@
-import axios from 'axios'
+import http from '@/api/http'
 
-const axiosInstance = axios.create({
-  baseURL: import.meta.env.VITE_BASE_URL,
-  headers: {
-    'Content-Type': 'application/json',
-    'X-Verification-Code': import.meta.env.VITE_VERIFICATION_CODE
-  },
-  withCredentials: true
-})
 export default async function (requestConfig) {
   const { url, headers, body, method = 'GET', params } = requestConfig
-  const requestUrl = `${import.meta.env.VITE_BASE_URL}${url}`
 
-  const response = await axiosInstance(requestUrl, {
+  const response = await http(url, {
     method,
-    data: JSON.stringify(body),
-    headers: {
-      ...headers
-    },
+    data: body,
+    headers,
     params
   })
 

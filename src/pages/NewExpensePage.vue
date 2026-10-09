@@ -112,8 +112,6 @@ import CategoryButtons from '@/components/CategoryButtons.vue'
 import AppButton from '@/components/AppButton.vue'
 import AppInputWithValidation from '@/components/AppInputWithValidation.vue'
 import sendRequest from '@/api/sendRequest'
-import useUserStore from '@/stores/user'
-import { mapStores } from 'pinia'
 import AppDatepickerWithValidation from '@/components/AppDatepickerWithValidation.vue'
 import InnerPageLayout from '@/layouts/InnerPageLayout.vue'
 
@@ -158,7 +156,6 @@ export default {
     AppButton
   },
   computed: {
-    ...mapStores(useUserStore),
     submitButtonDisabled() {
       return this.request.pending
     }
@@ -177,7 +174,6 @@ export default {
           url: '/api/cost',
           method: 'post',
           body: {
-            userId: this.userStore.user.id,
             amount,
             category,
             date: this.date,
@@ -238,17 +234,11 @@ export default {
     const [categories, fundsResponse] = await Promise.all([
       sendRequest({
         url: '/api/category',
-        method: 'get',
-        params: {
-          userId: this.userStore.user.id
-        }
+        method: 'get'
       }),
       sendRequest({
         url: '/api/funds',
-        method: 'get',
-        params: {
-          userId: this.userStore.user.id
-        }
+        method: 'get'
       })
     ])
 

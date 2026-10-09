@@ -134,7 +134,6 @@ import InnerPageLayout from '@/layouts/InnerPageLayout.vue'
 import AppInputWithValidation from '@/components/AppInputWithValidation.vue'
 import AppButton from '@/components/AppButton.vue'
 import { useRequest } from '@/composables/useRequest'
-import useUserStore from '@/stores/user'
 import useCurrenciesStore from '@/stores/currencies'
 import { useRoute, useRouter } from 'vue-router'
 import { computed, onBeforeMount, ref } from 'vue'
@@ -142,7 +141,6 @@ import { computed, onBeforeMount, ref } from 'vue'
 const { loading, fetchData } = useRequest()
 const router = useRouter()
 const route = useRoute()
-const { user } = useUserStore()
 const currenciesStore = useCurrenciesStore()
 
 const fundName = ref('')
@@ -200,7 +198,6 @@ onBeforeMount(async () => {
 
 const handleSubmit = async () => {
   const requestBody = {
-    userId: user.id,
     name: fundName.value,
     description: description.value,
     icon: getIconByName(iconName.value),

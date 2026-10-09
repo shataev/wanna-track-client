@@ -160,7 +160,6 @@ export default {
         url: '/api/costs',
         method: 'get',
         params: {
-          userId: this.userStore.user.id,
           dateFrom: this.dateFilter.dates[0],
           dateTo: this.dateFilter.dates[1]
         }
