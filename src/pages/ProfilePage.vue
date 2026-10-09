@@ -105,14 +105,18 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { onBeforeUnmount, onMounted, ref } from 'vue'
 import InnerPageLayout from '@/layouts/InnerPageLayout.vue'
 import AppButton from '@/components/AppButton.vue'
 import { storeToRefs } from 'pinia'
 import useUserStore from '@/stores/user'
 import sendRequest from '@/api/sendRequest'
+import { refreshSession } from '@/api/http'
+import { useRouter } from 'vue-router'
+import { ROUTE_NAMES } from '@/router/router.constants'
 
 const { user } = storeToRefs(useUserStore())
+const router = useRouter()
 
 const bindingLinkLoading = ref(false)
 const bindingLink = ref('')
@@ -136,6 +140,29 @@ async function fetchTelegramBindingLink() {
     bindingLinkLoading.value = false
   }
 }
+
+// Linking finishes in Telegram, so the bot's change only shows up once
+// the user is fetched again on coming back to this tab
+async function refetchUserAfterLinking() {
+  if (document.visibilityState !== 'visible' || !bindingLink.value || user.value?.telegramId) {
+    return
+  }
+
+  try {
+    await refreshSession()
+  } catch {
+    // The session has been cleared, the same as a failed refresh anywhere else
+    router.push({ name: ROUTE_NAMES.SIGN_IN })
+  }
+}
+
+onMounted(() => {
+  document.addEventListener('visibilitychange', refetchUserAfterLinking)
+})
+
+onBeforeUnmount(() => {
+  document.removeEventListener('visibilitychange', refetchUserAfterLinking)
+})
 </script>
 
 <style scoped lang="scss">
