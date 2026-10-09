@@ -135,6 +135,7 @@ import { formatAmount } from '@/utils/currency.utils'
 import { BUTTON_BACKGROUND_COLORS } from '@/constants/colors.constants'
 import { fetchTags, updateCostTags } from '@/services/tagsService'
 import { formatTag, normalizeTags } from '@/utils/tags.utils'
+import { fromPeriodQuery } from '@/utils/analytics.utils'
 
 ChartJS.register(ArcElement)
 
@@ -174,14 +175,15 @@ export default {
   data() {
     return {
       expenses: [],
-      dateFilter: {
+      // Analytics links here with its period and the category to open
+      dateFilter: fromPeriodQuery(this.$route.query) ?? {
         periodName: 'month',
         dates: getCurrentMonthRange()
       },
       chartPlugins: [centerText],
       tags: [],
       selectedTag: null,
-      expandedCategory: null,
+      expandedCategory: this.$route.query.category ?? null,
       tagEditor: {
         isOpen: false,
         isMenuOpen: false,

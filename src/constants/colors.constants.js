@@ -6,3 +6,10 @@ export const BUTTON_BACKGROUND_COLORS = [
   '#A7C76C',
   '#74795e'
 ]
+
+// Analytics deltas on the green background: more spending is the bad direction
+export const DELTA_COLORS = {
+  up: '#FFB4A2',
+  down: '#CAE39D',
+  flat: '#F6FDEB'
+}
