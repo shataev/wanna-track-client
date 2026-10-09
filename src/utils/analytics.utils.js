@@ -209,3 +209,22 @@ export const fromPeriodQuery = (query = {}) => {
 
   return { periodName: period, dates: [dateFrom, dateTo] }
 }
+
+/**
+ * Label for a period whose end is exclusive, as the API returns `previous`:
+ * the range ends on the last day it includes, so October's previous reads
+ * "Sep 1 – Sep 30", not "Sep 1 – Oct 1".
+ *
+ * @param {string|Date} dateFrom
+ * @param {string|Date} dateTo - first instant after the period
+ * @returns {string}
+ */
+export const formatPeriodRange = (dateFrom, dateTo) => {
+  const options = { day: 'numeric', month: 'short' }
+  const lastIncluded = new Date(new Date(dateTo).getTime() - 1)
+
+  return `${new Date(dateFrom).toLocaleDateString(
+    'en-US',
+    options
+  )} – ${lastIncluded.toLocaleDateString('en-US', options)}`
+}

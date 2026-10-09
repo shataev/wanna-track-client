@@ -4,6 +4,7 @@ import {
   formatDelta,
   formatMonthLabel,
   formatPercent,
+  formatPeriodRange,
   formatSignedAmount,
   fromPeriodQuery,
   getChange,
@@ -178,5 +179,20 @@ describe('period query', () => {
     expect(fromPeriodQuery({ period: 'decade', from: '2026-01-01', to: '2026-02-01' })).toBeNull()
     expect(fromPeriodQuery({ period: 'month', from: 'yesterday', to: '2026-02-01' })).toBeNull()
     expect(fromPeriodQuery({ period: 'month', from: '2026-03-01', to: '2026-02-01' })).toBeNull()
+  })
+})
+
+describe('formatPeriodRange', () => {
+  it('ends on the last day the period includes, not on the exclusive end', () => {
+    expect(formatPeriodRange(new Date(2026, 8, 1), new Date(2026, 9, 1))).toBe('Sep 1 – Sep 30')
+    expect(formatPeriodRange(new Date(2025, 11, 1), new Date(2026, 0, 1))).toBe('Dec 1 – Dec 31')
+    expect(formatPeriodRange(new Date(2026, 7, 31), new Date(2026, 9, 1))).toBe('Aug 31 – Sep 30')
+  })
+
+  it('accepts the ISO strings the API sends', () => {
+    const from = new Date(2026, 1, 1).toISOString()
+    const to = new Date(2026, 2, 1).toISOString()
+
+    expect(formatPeriodRange(from, to)).toBe('Feb 1 – Feb 28')
   })
 })

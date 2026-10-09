@@ -19,7 +19,7 @@
           </div>
 
           <div class="summary-row d-flex justify-space-between">
-            <span>vs {{ formatRange(summary.previous.dateFrom, summary.previous.dateTo) }}</span>
+            <span>vs {{ previousRange }}</span>
             <span :style="{ color: getDeltaColor(summary.total, summary.previous.total) }">
               {{ formatSignedAmount(totalChange.diff, summary.currency) }}
               <template v-if="totalChange.direction !== 'flat'">
@@ -175,6 +175,7 @@ import {
   formatDelta,
   formatMonthLabel,
   formatPercent,
+  formatPeriodRange,
   formatSignedAmount,
   fromPeriodQuery,
   getChange,
@@ -227,6 +228,9 @@ export default {
     ...mapStores(useCurrenciesStore),
     isPeriodEmpty() {
       return Boolean(this.summary) && !this.summary.count
+    },
+    previousRange() {
+      return formatPeriodRange(this.summary.previous.dateFrom, this.summary.previous.dateTo)
     },
     totalChange() {
       return getChange(this.summary.total, this.summary.previous.total)
@@ -311,13 +315,6 @@ export default {
         month: 'short',
         year: 'numeric'
       })
-    },
-    formatRange(dateFrom, dateTo) {
-      const options = { day: 'numeric', month: 'short' }
-
-      return `${new Date(dateFrom).toLocaleDateString('en-US', options)} – ${new Date(
-        dateTo
-      ).toLocaleDateString('en-US', options)}`
     },
     // Taken from the totals rather than the API's `share`, so the bars always add up to the total shown
     getShare(category) {
