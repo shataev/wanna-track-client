@@ -142,7 +142,8 @@ async function fetchTelegramBindingLink() {
 }
 
 // Linking finishes in Telegram, so the bot's change only shows up once
-// the user is fetched again on coming back to this tab
+// the user is fetched again on coming back to this tab. Focus covers linking
+// on the phone while this tab stays visible on the desktop
 async function refetchUserAfterLinking() {
   if (document.visibilityState !== 'visible' || !bindingLink.value || user.value?.telegramId) {
     return
@@ -158,10 +159,12 @@ async function refetchUserAfterLinking() {
 
 onMounted(() => {
   document.addEventListener('visibilitychange', refetchUserAfterLinking)
+  window.addEventListener('focus', refetchUserAfterLinking)
 })
 
 onBeforeUnmount(() => {
   document.removeEventListener('visibilitychange', refetchUserAfterLinking)
+  window.removeEventListener('focus', refetchUserAfterLinking)
 })
 </script>
 
