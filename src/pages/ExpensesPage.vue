@@ -92,6 +92,7 @@
     <v-card class="pa-4">
       <v-card-title class="px-0">Tags</v-card-title>
       <v-combobox
+        v-model:menu="tagEditor.isMenuOpen"
         :model-value="tagEditor.tags"
         :items="tagSuggestions"
         placeholder="Add a tag"
@@ -102,6 +103,7 @@
         hide-details="auto"
         :error-messages="tagEditor.error"
         @update:model-value="onTagEditorInput"
+        @update:focused="onTagEditorFocus"
       >
         <template #chip="{ props, item }">
           <v-chip v-bind="props" size="small">{{ formatTag(item.raw) }}</v-chip>
@@ -182,11 +184,14 @@ export default {
       expandedCategory: null,
       tagEditor: {
         isOpen: false,
+        isMenuOpen: false,
         costId: null,
         tags: [],
         saving: false,
         error: ''
-      }
+      },
+      // Only the response to the latest request may fill the page
+      expensesRequestId: 0
     }
   },
   watch: {
@@ -282,14 +287,26 @@ export default {
     openTagEditor(cost) {
       this.tagEditor = {
         isOpen: true,
+        isMenuOpen: false,
         costId: cost._id,
         tags: [...(cost.tags || [])],
         saving: false,
         error: ''
       }
     },
+    // The suggestion menu would otherwise stay open over Save on a phone.
+    // Closed on the next tick: Enter, and the search being cleared after a
+    // tag is added, both reopen it within the same update
     onTagEditorInput(value) {
       this.tagEditor.tags = normalizeTags(value)
+      this.$nextTick(() => {
+        this.tagEditor.isMenuOpen = false
+      })
+    },
+    onTagEditorFocus(isFocused) {
+      if (!isFocused) {
+        this.tagEditor.isMenuOpen = false
+      }
     },
     async saveTags() {
       this.tagEditor.saving = true
@@ -321,6 +338,8 @@ export default {
       this.dateFilter = value
     },
     async fetchExpenses() {
+      const requestId = ++this.expensesRequestId
+
       const expenses = await sendRequest({
         url: '/api/costs',
         method: 'get',
@@ -332,6 +351,11 @@ export default {
               dateTo: this.dateFilter.dates[1]
             }
       })
+
+      // A filter changed while this was in flight; a newer request owns the page
+      if (requestId !== this.expensesRequestId) {
+        return
+      }
 
       this.expenses = expenses
     }
