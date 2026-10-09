@@ -68,7 +68,7 @@
         </div>
         <div class="d-flex mt-3 active-tag-actions">
           <app-button
-            class="flex-grow-1"
+            class="active-tag-button"
             :loading="activeTagSaving"
             :disabled="activeTagSaving || !normalizeTag(activeTagInput) || normalizeTag(activeTagInput) === user?.activeTag"
             @click="saveActiveTag(activeTagInput)"
@@ -76,7 +76,7 @@
             Set
           </app-button>
           <app-button
-            class="flex-grow-1"
+            class="active-tag-button"
             :disabled="activeTagSaving || !user?.activeTag"
             @click="saveActiveTag(null)"
           >
@@ -275,6 +275,12 @@ onBeforeUnmount(() => {
 
 .active-tag-actions {
   gap: 12px;
+}
+
+// AppButton is a block button, which keeps a full-width minimum
+.active-tag-button {
+  flex: 1 1 0;
+  min-width: 0;
 }
 
 .telegram-link-button {
