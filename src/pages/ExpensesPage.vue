@@ -1,4 +1,16 @@
 <template>
+  <v-alert
+    v-model="alert.isVisible"
+    close-text="Close Alert"
+    class="alert"
+    closable
+    type="error"
+    density="compact"
+    position="fixed"
+    width="100%"
+  >
+    {{ alert.text }}
+  </v-alert>
   <v-select
     v-model="selectedTag"
     :items="tagItems"
@@ -74,46 +86,38 @@
             <v-chip v-for="tag in cost.tags || []" :key="tag" size="small" color="app-light">
               {{ formatTag(tag) }}
             </v-chip>
-            <v-btn
-              icon="mdi-tag-edit-outline"
-              variant="text"
-              size="small"
-              color="app-light"
-              aria-label="Edit tags"
-              @click="openTagEditor(cost)"
-            ></v-btn>
+            <div class="cost-actions d-flex ml-auto">
+              <v-btn
+                icon="mdi-pencil-outline"
+                variant="text"
+                size="small"
+                color="app-light"
+                aria-label="Edit expense"
+                @click="editCost(cost)"
+              ></v-btn>
+              <v-btn
+                icon="mdi-trash-can-outline"
+                variant="text"
+                size="small"
+                color="app-light"
+                aria-label="Delete expense"
+                @click="openDeleteConfirmation(cost)"
+              ></v-btn>
+            </div>
           </div>
         </div>
       </div>
     </template>
   </div>
 
-  <v-dialog v-model="tagEditor.isOpen" max-width="400">
+  <v-dialog v-model="deletion.isOpen" max-width="400">
     <v-card class="pa-4">
-      <v-card-title class="px-0">Tags</v-card-title>
-      <v-combobox
-        v-model:menu="tagEditor.isMenuOpen"
-        :model-value="tagEditor.tags"
-        :items="tagSuggestions"
-        placeholder="Add a tag"
-        multiple
-        chips
-        closable-chips
-        variant="outlined"
-        hide-details="auto"
-        :error-messages="tagEditor.error"
-        @update:model-value="onTagEditorInput"
-        @update:focused="onTagEditorFocus"
-      >
-        <template #chip="{ props, item }">
-          <v-chip v-bind="props" size="small">{{ formatTag(item.raw) }}</v-chip>
-        </template>
-      </v-combobox>
-      <v-card-actions class="px-0 mt-2">
+      <v-card-text class="px-0">{{ deletion.question }}</v-card-text>
+      <v-card-actions class="px-0">
         <v-spacer></v-spacer>
-        <v-btn variant="text" :disabled="tagEditor.saving" @click="tagEditor.isOpen = false">Cancel</v-btn>
-        <v-btn variant="flat" color="app-yellow-lighter" :loading="tagEditor.saving" @click="saveTags">
-          Save
+        <v-btn variant="text" :disabled="deletion.pending" @click="deletion.isOpen = false">Cancel</v-btn>
+        <v-btn variant="flat" color="app-dark" :loading="deletion.pending" @click="confirmDelete">
+          Delete
         </v-btn>
       </v-card-actions>
     </v-card>
@@ -133,9 +137,12 @@ import DateFilter from '@/components/DateFilter.vue'
 import { getCurrentMonthRange } from '@/utils/date.utils'
 import { formatAmount } from '@/utils/currency.utils'
 import { BUTTON_BACKGROUND_COLORS } from '@/constants/colors.constants'
-import { fetchTags, updateCostTags } from '@/services/tagsService'
-import { formatTag, normalizeTags } from '@/utils/tags.utils'
-import { fromPeriodQuery } from '@/utils/analytics.utils'
+import { fetchTags } from '@/services/tagsService'
+import { deleteCost } from '@/services/costService'
+import { formatTag } from '@/utils/tags.utils'
+import { fromPeriodQuery, toPeriodQuery } from '@/utils/analytics.utils'
+import { getDeleteConfirmation, getExpenseErrorMessage } from '@/utils/expense.utils'
+import { ROUTE_NAMES } from '@/router/router.constants'
 
 ChartJS.register(ArcElement)
 
@@ -182,15 +189,19 @@ export default {
       },
       chartPlugins: [centerText],
       tags: [],
-      selectedTag: null,
+      // Kept in the query when an expense is edited, so coming back finds the same list
+      selectedTag: this.$route.query.tag ?? null,
       expandedCategory: this.$route.query.category ?? null,
-      tagEditor: {
+      deletion: {
         isOpen: false,
-        isMenuOpen: false,
         costId: null,
-        tags: [],
-        saving: false,
-        error: ''
+        question: '',
+        pending: false
+      },
+      // Refusals from the API, shown as the expense form shows them
+      alert: {
+        isVisible: false,
+        text: ''
       },
       // Only the response to the latest request may fill the page
       expensesRequestId: 0
@@ -289,44 +300,42 @@ export default {
     toggleCategory(categoryId) {
       this.expandedCategory = this.expandedCategory === categoryId ? null : categoryId
     },
-    openTagEditor(cost) {
-      this.tagEditor = {
-        isOpen: true,
-        isMenuOpen: false,
-        costId: cost._id,
-        tags: [...(cost.tags || [])],
-        saving: false,
-        error: ''
-      }
-    },
-    // The suggestion menu would otherwise stay open over Save on a phone.
-    // Closed on the next tick: Enter, and the search being cleared after a
-    // tag is added, both reopen it within the same update
-    onTagEditorInput(value) {
-      this.tagEditor.tags = normalizeTags(value)
-      this.$nextTick(() => {
-        this.tagEditor.isMenuOpen = false
+    async editCost(cost) {
+      // The way back from the edit page lands on this period, tag and open category
+      await this.$router.replace({
+        query: {
+          ...(this.selectedTag ? { tag: this.selectedTag } : toPeriodQuery(this.dateFilter)),
+          ...(this.expandedCategory ? { category: this.expandedCategory } : {})
+        }
       })
+      this.$router.push({ name: ROUTE_NAMES.EXPENSE_EDIT, params: { id: cost._id } })
     },
-    onTagEditorFocus(isFocused) {
-      if (!isFocused) {
-        this.tagEditor.isMenuOpen = false
+    openDeleteConfirmation(cost) {
+      this.deletion = {
+        isOpen: true,
+        costId: cost._id,
+        question: getDeleteConfirmation(cost, this.formatWithSymbol),
+        pending: false
       }
     },
-    async saveTags() {
-      this.tagEditor.saving = true
-      this.tagEditor.error = ''
+    async confirmDelete() {
+      this.deletion.pending = true
 
       try {
-        await updateCostTags(this.tagEditor.costId, this.tagEditor.tags)
-        this.tagEditor.isOpen = false
-        await Promise.all([this.fetchExpenses(), this.fetchTags()])
+        await deleteCost(this.deletion.costId)
       } catch (error) {
-        console.error('[ExpensesPage] update tags', error)
-        this.tagEditor.error = 'Could not save the tags. Please try again.'
+        console.error('[ExpensesPage] delete expense', error)
+        this.alert = { isVisible: true, text: getExpenseErrorMessage(error, { action: 'deleting' }) }
+        setTimeout(() => {
+          this.alert.isVisible = false
+        }, 5000)
       } finally {
-        this.tagEditor.saving = false
+        this.deletion.pending = false
+        this.deletion.isOpen = false
       }
+
+      // Also after a refusal: an expense already deleted elsewhere leaves the list
+      await Promise.all([this.fetchExpenses(), this.fetchTags()])
     },
     async fetchTags() {
       // The filter only helps; the breakdown works without it
@@ -438,6 +447,17 @@ export default {
 
 .cost-tags {
   gap: 4px;
+}
+
+.cost-actions {
+  gap: 4px;
+}
+
+.alert {
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 10;
 }
 
 .date-filter-container {
