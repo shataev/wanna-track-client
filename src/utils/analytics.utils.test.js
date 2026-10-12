@@ -9,7 +9,7 @@ import {
   formatSignedAmount,
   fromPeriodQuery,
   getChange,
-  getDeltaColor,
+  getDeltaStyle,
   getMonthRange,
   getTrendColor,
   OTHER_CATEGORY_ID,
@@ -86,12 +86,28 @@ describe('formatSignedAmount', () => {
   })
 })
 
-describe('getDeltaColor', () => {
+describe('getDeltaStyle', () => {
   it('colours more spending as bad and less as good', () => {
-    expect(getDeltaColor(120, 100)).toBe(DELTA_COLORS.up)
-    expect(getDeltaColor(80, 100)).toBe(DELTA_COLORS.down)
-    expect(getDeltaColor(100, 100)).toBe(DELTA_COLORS.flat)
+    expect(getDeltaStyle(120, 100)).toBe(DELTA_COLORS.up)
+    expect(getDeltaStyle(80, 100)).toBe(DELTA_COLORS.down)
+    expect(getDeltaStyle(100, 100)).toBe(DELTA_COLORS.flat)
     expect(DELTA_COLORS.up).not.toBe(DELTA_COLORS.down)
+  })
+
+  // WCAG contrast of the pill text on its own background
+  const luminance = (hex) =>
+    [1, 3, 5]
+      .map((i) => parseInt(hex.slice(i, i + 2), 16) / 255)
+      .map((v) => (v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4))
+      .reduce((sum, v, i) => sum + v * [0.2126, 0.7152, 0.0722][i], 0)
+  const contrast = (a, b) => {
+    const [hi, lo] = [luminance(a), luminance(b)].sort((x, y) => y - x)
+    return (hi + 0.05) / (lo + 0.05)
+  }
+
+  it.each(['up', 'down', 'flat'])('keeps the %s pill readable (at least 7:1)', (direction) => {
+    const { color, backgroundColor } = DELTA_COLORS[direction]
+    expect(contrast(color, backgroundColor)).toBeGreaterThanOrEqual(7)
   })
 })
 

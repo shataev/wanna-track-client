@@ -81,13 +81,13 @@ export const formatSignedAmount = (amount, currencyCode) => {
 }
 
 /**
- * Colour of a delta. These are expenses: spending more is the bad direction.
+ * Pill colours of a delta. These are expenses: spending more is the bad direction.
  *
  * @param {number} current
  * @param {number} previous
- * @returns {string}
+ * @returns {{color: string, backgroundColor: string}}
  */
-export const getDeltaColor = (current, previous) =>
+export const getDeltaStyle = (current, previous) =>
   DELTA_COLORS[getChange(current, previous).direction]
 
 /**

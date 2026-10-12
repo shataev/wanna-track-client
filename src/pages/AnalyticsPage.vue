@@ -20,7 +20,7 @@
 
           <div class="summary-row d-flex justify-space-between">
             <span>vs {{ previousRange }}</span>
-            <span :style="{ color: getDeltaColor(summary.total, summary.previous.total) }">
+            <span class="delta-pill" :style="getDeltaStyle(summary.total, summary.previous.total)">
               {{ formatSignedAmount(totalChange.diff, summary.currency) }}
               <template v-if="totalChange.direction !== 'flat'">
                 ({{ formatDelta(summary.total, summary.previous.total) }})
@@ -65,8 +65,8 @@
           <span class="position-relative text-right flex-shrink-0 ml-2">
             <span class="d-block category-total">{{ formatWithSymbol(category.total) }}</span>
             <span
-              class="d-block category-delta"
-              :style="{ color: getDeltaColor(category.total, category.previousTotal) }"
+              class="delta-pill category-delta"
+              :style="getDeltaStyle(category.total, category.previousTotal)"
             >
               {{ formatDelta(category.total, category.previousTotal) }}
             </span>
@@ -178,7 +178,7 @@ import {
   formatSignedAmount,
   fromPeriodQuery,
   getChange,
-  getDeltaColor,
+  getDeltaStyle,
   getMonthRange,
   getTrendColor,
   toPeriodQuery
@@ -300,7 +300,7 @@ export default {
     formatPercent,
     formatSignedAmount,
     formatTag,
-    getDeltaColor,
+    getDeltaStyle,
     formatWithSymbol(amount, currencyCode = this.summary?.currency) {
       return `${formatAmount(amount, currencyCode)} ${this.currenciesStore.getSymbolByCode(
         currencyCode
@@ -466,9 +466,17 @@ export default {
   font-weight: 600;
 }
 
+.delta-pill {
+  display: inline-block;
+  padding: 1px 8px;
+  border-radius: 999px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
 .category-delta {
+  margin-top: 2px;
   font-size: 13px;
-  font-weight: 500;
 }
 
 .trend-chart {
