@@ -7,6 +7,7 @@
       variant="outlined"
       hide-details="auto"
       v-bind="field"
+      :model-value="field.value"
       :error-messages="errors"
       height="286px"
     >
