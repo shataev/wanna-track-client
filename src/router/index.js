@@ -60,6 +60,11 @@ const router = createRouter({
       component: NewExpensePage
     },
     {
+      path: '/expenses/:id/edit',
+      name: ROUTE_NAMES.EXPENSE_EDIT,
+      component: NewExpensePage
+    },
+    {
       path: '/funds/new',
       name: ROUTE_NAMES.NEW_FUND,
       component: EditFundPage
