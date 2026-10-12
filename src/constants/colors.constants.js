@@ -7,13 +7,13 @@ export const BUTTON_BACKGROUND_COLORS = [
   '#74795e'
 ]
 
-// Analytics deltas: more spending is the bad direction. Drawn as pills with their
-// own background, so they read the same anywhere on the page gradient; white text
-// keeps at least 7:1 on every pill
+// Analytics deltas: more spending is the bad direction. Pastel pills from the site's
+// palette with dark olive text, so they read the same anywhere on the page gradient;
+// the text keeps at least 4.5:1 on every pill
 export const DELTA_COLORS = {
-  up: { color: '#FFFFFF', backgroundColor: '#9F1D1D' },
-  down: { color: '#FFFFFF', backgroundColor: '#2F5D2F' },
-  flat: { color: '#F6FDEB', backgroundColor: '#4A4840' }
+  up: { color: '#3F3D36', backgroundColor: '#F7C1B0' },
+  down: { color: '#3F3D36', backgroundColor: '#CAE39D' },
+  flat: { color: '#3F3D36', backgroundColor: '#F6FDEB' }
 }
 
 // Analytics trend series, largest first. Each one keeps at least 3:1 contrast

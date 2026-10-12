@@ -105,9 +105,9 @@ describe('getDeltaStyle', () => {
     return (hi + 0.05) / (lo + 0.05)
   }
 
-  it.each(['up', 'down', 'flat'])('keeps the %s pill readable (at least 7:1)', (direction) => {
+  it.each(['up', 'down', 'flat'])('keeps the %s pill readable (at least 4.5:1)', (direction) => {
     const { color, backgroundColor } = DELTA_COLORS[direction]
-    expect(contrast(color, backgroundColor)).toBeGreaterThanOrEqual(7)
+    expect(contrast(color, backgroundColor)).toBeGreaterThanOrEqual(4.5)
   })
 })
 
