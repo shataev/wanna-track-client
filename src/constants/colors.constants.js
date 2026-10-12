@@ -7,11 +7,13 @@ export const BUTTON_BACKGROUND_COLORS = [
   '#74795e'
 ]
 
-// Analytics deltas on the green background: more spending is the bad direction
+// Analytics deltas: more spending is the bad direction. Drawn as pills with their
+// own background, so they read the same anywhere on the page gradient; white text
+// keeps at least 7:1 on every pill
 export const DELTA_COLORS = {
-  up: '#FFB4A2',
-  down: '#CAE39D',
-  flat: '#F6FDEB'
+  up: { color: '#FFFFFF', backgroundColor: '#9F1D1D' },
+  down: { color: '#FFFFFF', backgroundColor: '#2F5D2F' },
+  flat: { color: '#F6FDEB', backgroundColor: '#4A4840' }
 }
 
 // Analytics trend series, largest first. Each one keeps at least 3:1 contrast
