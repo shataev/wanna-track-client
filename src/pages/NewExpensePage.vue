@@ -176,6 +176,7 @@ import {
   buildCostRequestBody,
   buildCostUpdateBody,
   costToExpenseForm,
+  getCurrencyAfterFundChange,
   getExpenseErrorMessage,
   getFundDebit
 } from '@/utils/expense.utils'
@@ -270,11 +271,17 @@ export default {
     }
   },
   watch: {
-    // Every change of fund starts again from that fund's currency, even when
-    // it is the same as the previous fund's; the user can still pick another
+    // A new expense starts again from the fund's currency on every change of fund,
+    // even when it is the same as the previous fund's; an edited one keeps its own.
+    // The user can still pick another
     sourceFund: {
       handler() {
-        this.currency = this.defaultCurrency || null
+        this.currency = getCurrencyAfterFundChange({
+          isEditMode: this.isEditMode,
+          currency: this.currency,
+          fundCurrency: this.selectedFund?.currency,
+          userCurrency: this.userStore.user.defaultCurrency
+        })
       },
       immediate: true
     }
@@ -389,10 +396,10 @@ export default {
       this.date = form.date
       this.comment = form.comment
       this.tags = form.tags
+      // Set before the fund, so the fund's watcher keeps it
+      this.currency = form.currency
       this.sourceFund = form.fundId
-      // A change of fund resets the currency to the fund's; the cost keeps its own
       await this.$nextTick()
-      this.currency = form.currency || this.defaultCurrency || null
       this.isLoaded = true
     }
   },

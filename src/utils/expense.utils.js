@@ -17,6 +17,22 @@ export const buildCostRequestBody = ({ amount, category, date, comment, fundId, 
 })
 
 /**
+ * The currency once the fund changes. A new expense starts again from the fund's
+ * currency (else the user's default); an edited one keeps what it was spent in, so
+ * moving it to another fund changes what is debited, never what it cost.
+ *
+ * @param {{isEditMode: boolean, currency: string|null, fundCurrency?: string, userCurrency?: string}} state
+ * @returns {string|null}
+ */
+export const getCurrencyAfterFundChange = ({ isEditMode, currency, fundCurrency, userCurrency }) => {
+  if (isEditMode && currency) {
+    return currency
+  }
+
+  return fundCurrency || userCurrency || null
+}
+
+/**
  * What the fund will be debited when the expense is in another currency,
  * using the same conversion as the API.
  *

@@ -4,6 +4,7 @@ import {
   buildCostUpdateBody,
   costToExpenseForm,
   getDeleteConfirmation,
+  getCurrencyAfterFundChange,
   getExpenseErrorMessage,
   getFundDebit
 } from '@/utils/expense.utils'
@@ -217,5 +218,53 @@ describe('getExpenseErrorMessage', () => {
 
   it('tells a network failure apart', () => {
     expect(getExpenseErrorMessage(new Error('Network Error'))).toMatch(/^Network error/)
+  })
+})
+
+describe('getCurrencyAfterFundChange', () => {
+  it('starts a new expense again from the fund currency, else the default', () => {
+    expect(
+      getCurrencyAfterFundChange({ isEditMode: false, currency: 'JPY', fundCurrency: 'THB', userCurrency: 'USD' })
+    ).toBe('THB')
+    expect(
+      getCurrencyAfterFundChange({ isEditMode: false, currency: 'JPY', fundCurrency: undefined, userCurrency: 'USD' })
+    ).toBe('USD')
+  })
+
+  // 1500 JPY moved from Cash to Card must stay 1500 JPY, not become 1500 THB
+  it('keeps what an edited expense was spent in when its fund changes', () => {
+    expect(
+      getCurrencyAfterFundChange({ isEditMode: true, currency: 'JPY', fundCurrency: 'THB', userCurrency: 'THB' })
+    ).toBe('JPY')
+    expect(
+      getCurrencyAfterFundChange({ isEditMode: true, currency: 'JPY', fundCurrency: undefined, userCurrency: 'THB' })
+    ).toBe('JPY')
+  })
+
+  it('moving the fund only sends the same amount and currency, and previews the new debit', () => {
+    const currency = getCurrencyAfterFundChange({
+      isEditMode: true,
+      currency: 'JPY',
+      fundCurrency: 'THB',
+      userCurrency: 'THB'
+    })
+    const body = buildCostUpdateBody({
+      amount: 1500,
+      category: 'cat-food',
+      date: new Date('2026-10-25T12:00:00Z'),
+      comment: 'Ramen',
+      fundId: 'fund-card',
+      currency,
+      tags: []
+    })
+
+    expect(body).toMatchObject({ amount: 1500, currency: 'JPY', fundId: 'fund-card' })
+    expect(getFundDebit({ amount: 1500, currency, fundCurrency: 'THB', rates: RATES })).toEqual({ fundAmount: 360 })
+  })
+
+  it('falls back to the fund currency when an edited expense has none', () => {
+    expect(
+      getCurrencyAfterFundChange({ isEditMode: true, currency: null, fundCurrency: 'THB', userCurrency: 'USD' })
+    ).toBe('THB')
   })
 })
