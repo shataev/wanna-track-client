@@ -16,6 +16,10 @@ export const DELTA_COLORS = {
   flat: { color: '#3F3D36', backgroundColor: '#F6FDEB' }
 }
 
+// A refusal on the Expenses page, in the warm tone of the "more spending" pill rather
+// than a harsh red
+export const ALERT_COLORS = { color: '#3F3D36', backgroundColor: '#F4A261' }
+
 // Analytics trend series, largest first. Each one keeps at least 3:1 contrast
 // against #5F5B53, the darkest end of the page background
 export const TREND_COLORS = ['#FFDA4D', '#9CC7F0', '#CAE39D', '#C3B2F5', '#8FD9C4', '#FF9EC0']

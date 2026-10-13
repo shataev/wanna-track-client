@@ -4,7 +4,10 @@
     close-text="Close Alert"
     class="alert"
     closable
-    type="error"
+    icon="mdi-alert-circle-outline"
+    variant="flat"
+    :color="ALERT_COLORS.backgroundColor"
+    :style="{ color: ALERT_COLORS.color }"
     density="compact"
     position="fixed"
     width="100%"
@@ -136,7 +139,7 @@ import { mapStores } from 'pinia'
 import DateFilter from '@/components/DateFilter.vue'
 import { getCurrentMonthRange } from '@/utils/date.utils'
 import { formatAmount } from '@/utils/currency.utils'
-import { BUTTON_BACKGROUND_COLORS } from '@/constants/colors.constants'
+import { ALERT_COLORS, BUTTON_BACKGROUND_COLORS } from '@/constants/colors.constants'
 import { fetchTags } from '@/services/tagsService'
 import { deleteCost } from '@/services/costService'
 import { formatTag } from '@/utils/tags.utils'
@@ -188,6 +191,7 @@ export default {
         dates: getCurrentMonthRange()
       },
       chartPlugins: [centerText],
+      ALERT_COLORS,
       tags: [],
       // Kept in the query when an expense is edited, so coming back finds the same list
       selectedTag: this.$route.query.tag ?? null,
