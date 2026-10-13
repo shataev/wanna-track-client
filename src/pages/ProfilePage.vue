@@ -140,6 +140,8 @@
         </label>
       </div>
     </v-form>
+
+    <connected-apps />
   </inner-page-layout>
 </template>
 
@@ -147,6 +149,7 @@
 import { onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import InnerPageLayout from '@/layouts/InnerPageLayout.vue'
 import AppButton from '@/components/AppButton.vue'
+import ConnectedApps from '@/components/ConnectedApps.vue'
 import { storeToRefs } from 'pinia'
 import useUserStore from '@/stores/user'
 import sendRequest from '@/api/sendRequest'
