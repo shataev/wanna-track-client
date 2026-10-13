@@ -142,6 +142,19 @@
     </v-form>
 
     <connected-apps />
+
+    <signed-in-devices @sign-out="signOutHere" />
+
+    <div class="sign-out mt-6">
+      <div v-if="signOutError" class="sign-out-error mb-3">{{ signOutError }}</div>
+      <app-button
+        :loading="signingOut"
+        :disabled="signingOut"
+        @click="signOutHere"
+      >
+        Sign out
+      </app-button>
+    </div>
   </inner-page-layout>
 </template>
 
@@ -150,6 +163,7 @@ import { onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import InnerPageLayout from '@/layouts/InnerPageLayout.vue'
 import AppButton from '@/components/AppButton.vue'
 import ConnectedApps from '@/components/ConnectedApps.vue'
+import SignedInDevices from '@/components/SignedInDevices.vue'
 import { storeToRefs } from 'pinia'
 import useUserStore from '@/stores/user'
 import sendRequest from '@/api/sendRequest'
@@ -158,6 +172,8 @@ import { useRouter } from 'vue-router'
 import { ROUTE_NAMES } from '@/router/router.constants'
 import { setActiveTag } from '@/services/tagsService'
 import { normalizeTag } from '@/utils/tags.utils'
+import { signOut } from '@/services/authService'
+import { getSessionsErrorMessage } from '@/utils/sessions.utils'
 
 const userStore = useUserStore()
 const { user } = storeToRefs(userStore)
@@ -226,6 +242,24 @@ async function refetchUserAfterLinking() {
   } catch {
     // The session has been cleared, the same as a failed refresh anywhere else
     router.push({ name: ROUTE_NAMES.SIGN_IN })
+  }
+}
+
+const signingOut = ref(false)
+const signOutError = ref('')
+
+async function signOutHere() {
+  signingOut.value = true
+  signOutError.value = ''
+
+  try {
+    await signOut()
+    router.push({ name: ROUTE_NAMES.SIGN_IN })
+  } catch (error) {
+    console.error('[ProfilePage] sign out', error)
+    signOutError.value = getSessionsErrorMessage(error, 'sign out')
+  } finally {
+    signingOut.value = false
   }
 }
 
@@ -304,6 +338,19 @@ onBeforeUnmount(() => {
   font-size: 14px;
   color: #f6fdeb;
   opacity: 0.9;
+}
+
+.sign-out {
+  padding: 0 1rem 32px;
+}
+
+// The warm tone of the site's refusals
+.sign-out-error {
+  font-size: 14px;
+  color: #3f3d36;
+  background: #f4a261;
+  border-radius: 12px;
+  padding: 8px 12px;
 }
 
 .binding-link-url {

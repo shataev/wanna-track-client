@@ -3,10 +3,12 @@ import useAuthStore from '@/stores/auth'
 
 export const REFRESH_URL = '/api/auth/refresh'
 const SIGN_IN_URL = '/api/auth/signin'
+export const SIGN_OUT_URL = '/api/auth/signout'
 
 // A 401 from these means the credentials themselves were rejected,
-// so refreshing and retrying would only loop
-const NO_RETRY_URLS = [REFRESH_URL, SIGN_IN_URL]
+// so refreshing and retrying would only loop. Sign-out needs no access
+// token, so refreshing for it would only start a session to end it
+const NO_RETRY_URLS = [REFRESH_URL, SIGN_IN_URL, SIGN_OUT_URL]
 
 const http = axios.create({
   baseURL: import.meta.env.VITE_BASE_URL,
