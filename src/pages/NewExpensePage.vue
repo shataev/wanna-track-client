@@ -11,7 +11,7 @@
   >
     {{ alert.text }}
   </v-alert>
-  <inner-page-layout title="Add Expense">
+  <inner-page-layout :title="isEditMode ? 'Edit expense' : 'Add Expense'">
     <vee-form :validation-schema="validationSchema" @submit="submit">
       <v-form>
         <div class="form-element-wrapper mb-4">
@@ -134,7 +134,7 @@
         <div class="form-element-wrapper mb-4">
           <label class="form-label text-app-light d-flex flex-column">
             <span class="label-text mb-1">Comment</span>
-            <vee-field name="comment" v-slot="{ field, errors }" v-bind="$attrs">
+            <vee-field name="comment" v-model="comment" v-slot="{ field, errors }" v-bind="$attrs">
               <v-textarea
                 type="text"
                 placeholder="Enter comments"
@@ -151,7 +151,9 @@
         </div>
       </v-form>
 
-      <app-button class="mt-12" type="submit" :loading="request.pending">Save</app-button>
+      <app-button class="mt-12" type="submit" :loading="request.pending" :disabled="isEditMode && !isLoaded">
+        Save
+      </app-button>
     </vee-form>
   </inner-page-layout>
 </template>
@@ -169,7 +171,16 @@ import useUserStore from '@/stores/user'
 import useCurrenciesStore from '@/stores/currencies'
 import { fetchTags } from '@/services/tagsService'
 import { normalizeTags } from '@/utils/tags.utils'
-import { buildCostRequestBody, getFundDebit } from '@/utils/expense.utils'
+import { fetchCost, updateCost } from '@/services/costService'
+import {
+  buildCostRequestBody,
+  buildCostUpdateBody,
+  costToExpenseForm,
+  getCurrencyAfterFundChange,
+  getExpenseErrorMessage,
+  getFundDebit
+} from '@/utils/expense.utils'
+import { ROUTE_NAMES } from '@/router/router.constants'
 import { formatAmount, orderCurrencies } from '@/utils/currency.utils'
 
 const ALERT_INITIAL_STATE = {
@@ -197,6 +208,8 @@ export default {
       tags: [],
       tagSuggestions: [],
       rates: null,
+      // Edit mode: the form is filled from the cost before it can be saved
+      isLoaded: false,
       validationSchema: {
         amount: 'required|min_expense_value:1',
         category: 'required',
@@ -218,6 +231,13 @@ export default {
   },
   computed: {
     ...mapStores(useUserStore, useCurrenciesStore),
+    // /expenses/:id/edit
+    costId() {
+      return this.$route.params.id ?? null
+    },
+    isEditMode() {
+      return Boolean(this.costId)
+    },
     selectedFund() {
       return this.funds.find((fund) => fund._id === this.sourceFund) ?? null
     },
@@ -251,11 +271,17 @@ export default {
     }
   },
   watch: {
-    // Every change of fund starts again from that fund's currency, even when
-    // it is the same as the previous fund's; the user can still pick another
+    // A new expense starts again from the fund's currency on every change of fund,
+    // even when it is the same as the previous fund's; an edited one keeps its own.
+    // The user can still pick another
     sourceFund: {
       handler() {
-        this.currency = this.defaultCurrency || null
+        this.currency = getCurrencyAfterFundChange({
+          isEditMode: this.isEditMode,
+          currency: this.currency,
+          fundCurrency: this.selectedFund?.currency,
+          userCurrency: this.userStore.user.defaultCurrency
+        })
       },
       immediate: true
     }
@@ -272,13 +298,57 @@ export default {
 
       this.tags = activeTag ? [activeTag] : []
     },
+    // Back to where the edit was opened from; the list there loads afresh.
+    // An edit link opened on its own has nothing to go back to
     goBack() {
-      this.$router.back()
+      if (window.history.state?.back) {
+        this.$router.back()
+      } else {
+        this.$router.replace({ name: ROUTE_NAMES.EXPENSES })
+      }
+    },
+    showError(error) {
+      this.alert = {
+        type: 'error',
+        text: getExpenseErrorMessage(error, {
+          currency: this.currency,
+          action: this.isEditMode ? 'saving' : 'creating'
+        }),
+        isVisible: true
+      }
     },
     async submit(values, { resetForm }) {
       const { amount, category, comment } = values
 
       this.request.pending = true
+
+      if (this.isEditMode) {
+        try {
+          await updateCost(
+            this.costId,
+            buildCostUpdateBody({
+              amount,
+              category,
+              date: this.date,
+              comment,
+              fundId: this.sourceFund,
+              currency: this.currency,
+              tags: this.tags
+            })
+          )
+
+          this.goBack()
+        } catch (error) {
+          this.showError(error)
+        } finally {
+          this.request.pending = false
+          setTimeout(() => {
+            this.alert = { ...ALERT_INITIAL_STATE }
+          }, 5000)
+        }
+
+        return
+      }
 
       try {
         await sendRequest({
@@ -296,6 +366,8 @@ export default {
         })
 
         resetForm();
+        // The category field follows this model, so it has to be cleared with the form
+        this.category = null
         this.categoryKey = Date.now();
         this.currency = this.defaultCurrency || null
         this.resetTags()
@@ -304,42 +376,8 @@ export default {
           text: 'Created!',
           isVisible: true
         }
-      } catch (error) {      
-        if (error.response) {
-          const { error: errorMessage } = error.response.data
-          
-          if (errorMessage === 'Fund not found') {
-            this.alert = {
-              type: 'error',
-              text: 'Selected fund was not found. Please try again.',
-              isVisible: true
-            }
-          } else if (errorMessage === 'Insufficient funds') {
-            this.alert = {
-              type: 'error',
-              text: 'Insufficient funds in the selected account. Please choose another fund or reduce the amount.',
-              isVisible: true
-            }
-          } else if (errorMessage?.startsWith('Exchange rate not found')) {
-            this.alert = {
-              type: 'error',
-              text: `No exchange rate for ${this.currency}. Please choose another currency.`,
-              isVisible: true
-            }
-          } else {
-            this.alert = {
-              type: 'error',
-              text: 'An error occurred while creating the expense. Please try again.',
-              isVisible: true
-            }
-          }
-        } else {
-          this.alert = {
-            type: 'error',
-            text: 'Network error. Please check your connection and try again.',
-            isVisible: true
-          }
-        }
+      } catch (error) {
+        this.showError(error)
       } finally {
         this.request.pending = false
         setTimeout(() => {
@@ -349,10 +387,26 @@ export default {
     },
     onDateChange(newDate) {
       this.date = newDate
+    },
+    async fillFromCost(cost) {
+      const form = costToExpenseForm(cost, this.funds)
+
+      this.amount = form.amount
+      this.category = form.category
+      this.date = form.date
+      this.comment = form.comment
+      this.tags = form.tags
+      // Set before the fund, so the fund's watcher keeps it
+      this.currency = form.currency
+      this.sourceFund = form.fundId
+      await this.$nextTick()
+      this.isLoaded = true
     }
   },
   async beforeMount() {
-    this.resetTags()
+    if (!this.isEditMode) {
+      this.resetTags()
+    }
 
     // Suggestions and the debit preview only help; the page works without them
     fetchTags()
@@ -366,7 +420,7 @@ export default {
       })
       .catch((error) => console.warn('[NewExpensePage] exchange rates are not available', error))
 
-    const [categories, fundsResponse] = await Promise.all([
+    const [categories, fundsResponse, cost] = await Promise.all([
       sendRequest({
         url: '/api/category',
         method: 'get'
@@ -374,7 +428,8 @@ export default {
       sendRequest({
         url: '/api/funds',
         method: 'get'
-      })
+      }),
+      this.isEditMode ? fetchCost(this.costId).catch((error) => ({ error })) : null
     ])
 
     this.categories = categories
@@ -382,7 +437,24 @@ export default {
       { _id: null, name: 'No fund', isDefault: false },
       ...fundsResponse.funds
     ]
-    
+
+    if (this.isEditMode) {
+      if (cost.error) {
+        this.alert = {
+          type: 'error',
+          text:
+            cost.error.response?.status === 404
+              ? 'This expense no longer exists.'
+              : getExpenseErrorMessage(cost.error, { action: 'loading' }),
+          isVisible: true
+        }
+      } else {
+        await this.fillFromCost(cost)
+      }
+
+      return
+    }
+
     // Set default fund if exists
     const defaultFund = this.funds.find(fund => fund.isDefault)
     
