@@ -36,7 +36,7 @@
             <v-select
               v-model="sourceFund"
               name="sourceFund"
-              :items="funds"
+              :items="fundItems"
               item-title="name"
               item-value="_id"
               class="form-element form-element-input text-app-light"
@@ -180,7 +180,7 @@ import {
   getExpenseErrorMessage,
   getFundDebit
 } from '@/utils/expense.utils'
-import { pickActiveFunds, withCostFund } from '@/utils/fund.utils'
+import { buildFundPickerItems, pickActiveFunds, pickDefaultFund, withCostFund } from '@/utils/fund.utils'
 import { ROUTE_NAMES } from '@/router/router.constants'
 import { formatAmount, orderCurrencies } from '@/utils/currency.utils'
 
@@ -238,6 +238,9 @@ export default {
     },
     isEditMode() {
       return Boolean(this.costId)
+    },
+    fundItems() {
+      return buildFundPickerItems(this.funds)
     },
     selectedFund() {
       return this.funds.find((fund) => fund._id === this.sourceFund) ?? null
@@ -462,8 +465,8 @@ export default {
     }
 
     // Set default fund if exists
-    const defaultFund = this.funds.find(fund => fund.isDefault)
-    
+    const defaultFund = pickDefaultFund(this.funds)
+
     if (defaultFund) {
       this.sourceFund = defaultFund._id
     }

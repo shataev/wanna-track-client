@@ -18,15 +18,39 @@
     </template>
   </div>
 
+  <div v-if="hasSplit" class="funds-split d-flex justify-center text-app-light mb-6">
+    <div class="text-center mx-4">
+      <div class="text-body-2">Available</div>
+      <div class="text-h6">{{ formatTotal(total.available) }}</div>
+    </div>
+    <div class="text-center mx-4">
+      <div class="text-body-2">Saved</div>
+      <div class="text-h6">{{ formatTotal(total.saved) }}</div>
+    </div>
+  </div>
+
   <div class="values">
+    <div v-if="hasSplit" class="text-app-light text-h6 mb-2">Accounts</div>
     <FundCard
-      v-for="fund in funds"
+      v-for="fund in grouped.accounts"
       :key="fund._id"
       class="mb-4"
       :fund
       @edit-fund="editFund(fund._id)"
       @archive-fund="askArchive(fund)"
     />
+
+    <template v-if="grouped.savings.length">
+      <div class="text-app-light text-h6 mb-2 mt-6">Savings</div>
+      <FundCard
+        v-for="fund in grouped.savings"
+        :key="fund._id"
+        class="mb-4"
+        :fund
+        @edit-fund="editFund(fund._id)"
+        @archive-fund="askArchive(fund)"
+      />
+    </template>
   </div>
 
   <div v-if="archived.funds.length" class="archive mt-6">
@@ -102,7 +126,7 @@ import {
   fetchFunds,
   restoreFund
 } from '@/services/fundsService'
-import { getFundActionMessage } from '@/utils/fund.utils'
+import { getFundActionMessage, groupFundsByKind } from '@/utils/fund.utils'
 import useUserStore from '@/stores/user'
 import useCurrenciesStore from '@/stores/currencies'
 import { mapStores } from 'pinia'
@@ -162,6 +186,13 @@ export default {
     currenciesStore() {
       return useCurrenciesStore()
     },
+    grouped() {
+      return groupFundsByKind(this.funds)
+    },
+    // Only an API that knows savings sends the split; before that the page is as it was
+    hasSplit() {
+      return Number.isFinite(this.total?.available) && Number.isFinite(this.total?.saved)
+    },
     totalCurrencySymbol() {
       return this.currenciesStore.getSymbolByCode(this.total?.currency)
     },
@@ -197,6 +228,9 @@ export default {
   },
   methods: {
     formatAmount,
+    formatTotal(amount) {
+      return `${formatAmount(amount, this.total.currency)} ${this.totalCurrencySymbol}`.trim()
+    },
     getButtonBackgroundColor(index) {
       return this.colors[index]
     },

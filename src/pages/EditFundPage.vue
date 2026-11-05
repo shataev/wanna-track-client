@@ -84,6 +84,48 @@
         </div>
 
         <div class="form-element-wrapper mb-4">
+          <span class="form-label text-app-light label-text d-block mb-1">Type</span>
+          <v-btn-toggle
+            v-model="kind"
+            mandatory
+            divided
+            rounded="pill"
+            color="#CAE39D"
+            class="text-app-light"
+          >
+            <v-btn value="account">Account</v-btn>
+            <v-btn value="savings">Savings</v-btn>
+          </v-btn-toggle>
+        </div>
+
+        <div v-if="kind === 'savings'" class="form-element-wrapper mb-4">
+          <span class="form-label text-app-light label-text d-block mb-1">Goal (optional)</span>
+          <app-input
+            type="number"
+            placeholder="Target amount"
+            name="goalAmount"
+            v-model="goalAmount"
+            :suffix="currency?.symbol || ''"
+            :error-messages="goalError ? [goalError] : []"
+            bg-color="transparent"
+            class-name="form-element form-element-input text-app-light mb-2"
+            variant="outlined"
+            hide-details="auto"
+            clearable
+          ></app-input>
+          <app-input
+            type="date"
+            name="goalDate"
+            v-model="goalDate"
+            bg-color="transparent"
+            class-name="form-element form-element-input text-app-light"
+            variant="outlined"
+            hide-details="auto"
+            clearable
+          ></app-input>
+        </div>
+
+        <div v-if="kind !== 'savings'" class="form-element-wrapper mb-4">
           <v-checkbox
             v-model="isDefault"
             name="isDefault"
@@ -133,6 +175,8 @@
 import InnerPageLayout from '@/layouts/InnerPageLayout.vue'
 import AppInputWithValidation from '@/components/AppInputWithValidation.vue'
 import AppButton from '@/components/AppButton.vue'
+import AppInput from '@/components/AppInput.vue'
+import { buildKindFields, getGoalError, goalDateToInput } from '@/utils/fund.utils'
 import { useRequest } from '@/composables/useRequest'
 import useCurrenciesStore from '@/stores/currencies'
 import { useRoute, useRouter } from 'vue-router'
@@ -149,6 +193,17 @@ const balance = ref('')
 const iconName = ref('')
 const description = ref('')
 const isDefault = ref(false)
+const kind = ref('account')
+const goalAmount = ref('')
+const goalDate = ref('')
+// An API that predates savings sends no `kind`; then the form sends none either
+const apiKnowsKind = ref(false)
+const showGoalError = ref(false)
+const goalError = computed(() =>
+  showGoalError.value
+    ? getGoalError({ goalAmount: goalAmount.value, goalDate: goalDate.value })
+    : null
+)
 const fundId = computed(() => route.params.id)
 const isEditMode = computed(() => !!fundId.value)
 
@@ -193,16 +248,33 @@ onBeforeMount(async () => {
     iconName.value = response.icon.replace('mdi-', '')
     isDefault.value = response.isDefault || false
     currency.value = currencies.value.find(c => c.code === response.currency)
+    apiKnowsKind.value = Boolean(response.kind)
+    kind.value = response.kind === 'savings' ? 'savings' : 'account'
+    goalAmount.value = response.goal?.amount ?? ''
+    goalDate.value = goalDateToInput(response.goal?.date)
   }
 })
 
 const handleSubmit = async () => {
+  showGoalError.value = true
+
+  if (kind.value === 'savings' && getGoalError({ goalAmount: goalAmount.value, goalDate: goalDate.value })) {
+    return
+  }
+
   const requestBody = {
     name: fundName.value,
     description: description.value,
     icon: getIconByName(iconName.value),
-    isDefault: isDefault.value,
-    currency: currency.value?.code
+    // A savings fund is never the default
+    isDefault: kind.value === 'savings' ? false : isDefault.value,
+    currency: currency.value?.code,
+    ...buildKindFields({
+      kind: kind.value,
+      goalAmount: goalAmount.value,
+      goalDate: goalDate.value,
+      apiKnowsKind: apiKnowsKind.value
+    })
   }
 
   if (isEditMode.value) {
