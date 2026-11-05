@@ -96,6 +96,7 @@ import {
 import { useRouter, useRoute } from 'vue-router'
 import { ref, computed, onBeforeMount, reactive } from 'vue'
 import { useForm } from 'vee-validate'
+import { pickActiveFunds } from '@/utils/fund.utils'
 
 const { loading, fetchData } = useRequest()
 const router = useRouter()
@@ -178,7 +179,7 @@ onBeforeMount(async () => {
     method: 'get'
   });
 
-  funds.value = response.funds;
+  funds.value = pickActiveFunds(response.funds);
 
   // Only needed to preview the converted amount; a missing rates document
   // must not keep the page from working

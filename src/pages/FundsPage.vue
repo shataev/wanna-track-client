@@ -25,15 +25,84 @@
       class="mb-4"
       :fund
       @edit-fund="editFund(fund._id)"
-      @delete-fund="deleteFund(fund._id)"
+      @archive-fund="askArchive(fund)"
     />
   </div>
+
+  <div v-if="archived.funds.length" class="archive mt-6">
+    <v-btn
+      variant="text"
+      color="#f2f5e9"
+      :append-icon="archived.isOpen ? 'mdi-chevron-up' : 'mdi-chevron-down'"
+      @click="archived.isOpen = !archived.isOpen"
+    >
+      Archive ({{ archived.funds.length }})
+    </v-btn>
+
+    <v-expand-transition>
+      <div v-show="archived.isOpen" class="mt-2">
+        <v-card
+          v-for="fund in archived.funds"
+          :key="fund._id"
+          flat
+          rounded="xl"
+          class="mb-3 text-app-light"
+          color="rgb(246 253 235 / 6%)"
+        >
+          <template v-if="fund.icon" #prepend>
+            <v-icon>{{ fund.icon }}</v-icon>
+          </template>
+          <template #title>
+            <div class="d-flex justify-space-between">
+              <span>{{ fund.name }}</span>
+              <span>{{ formatFundAmount(fund) }}</span>
+            </div>
+          </template>
+          <template #actions>
+            <div class="d-flex justify-end w-100">
+              <v-btn variant="text" color="#f2f5e9" :disabled="isBusy" @click="restore(fund)">
+                Restore
+              </v-btn>
+              <v-btn variant="text" color="#f2f5e9" :disabled="isBusy" @click="askDelete(fund)">
+                Delete
+              </v-btn>
+            </div>
+          </template>
+        </v-card>
+      </div>
+    </v-expand-transition>
+  </div>
+
+  <v-snackbar v-model="notice.isOpen" :timeout="6000" color="app-dark">{{ notice.text }}</v-snackbar>
+
+  <v-dialog v-model="confirmation.isOpen" max-width="400">
+    <v-card class="pa-4">
+      <v-card-title class="px-0 text-wrap">{{ confirmation.title }}</v-card-title>
+      <v-card-text class="px-0">{{ confirmation.text }}</v-card-text>
+      <v-card-actions class="px-0">
+        <v-spacer></v-spacer>
+        <v-btn variant="text" :disabled="confirmation.pending" @click="confirmation.isOpen = false">
+          Cancel
+        </v-btn>
+        <v-btn variant="flat" color="app-dark" :loading="confirmation.pending" @click="confirm">
+          {{ confirmation.confirmLabel }}
+        </v-btn>
+      </v-card-actions>
+    </v-card>
+  </v-dialog>
 </template>
 
 <script>
 import chroma from 'chroma-js'
 import { Chart as ChartJS, ArcElement } from 'chart.js'
-import sendRequest from '@/api/sendRequest'
+import {
+  archiveFund,
+  deleteFund,
+  fetchArchivedFunds,
+  fetchFunds,
+  restoreFund
+} from '@/services/fundsService'
+import { getFundActionMessage } from '@/utils/fund.utils'
 import useUserStore from '@/stores/user'
 import useCurrenciesStore from '@/stores/currencies'
 import { mapStores } from 'pinia'
@@ -74,6 +143,18 @@ export default {
     return {
       funds: [],
       total: null,
+      isBusy: false,
+      archived: { funds: [], isOpen: false },
+      notice: { isOpen: false, text: '' },
+      confirmation: {
+        isOpen: false,
+        pending: false,
+        title: '',
+        text: '',
+        confirmLabel: '',
+        action: null,
+        fund: null
+      }
     }
   },
   computed: {
@@ -127,20 +208,82 @@ export default {
         }
       })
     },
-    async deleteFund(fundId) {
-      await sendRequest({
-        url: `/api/funds/${fundId}`,
-        method: 'delete'
-      })
+    formatFundAmount(fund) {
+      const symbol = this.currenciesStore.getSymbolByCode(fund.currency)
+
+      return `${formatAmount(fund.currentBalance, fund.currency)} ${symbol}`.trim()
+    },
+    showNotice(text) {
+      this.notice = { isOpen: true, text }
+    },
+    askArchive(fund) {
+      this.confirmation = {
+        isOpen: true,
+        pending: false,
+        title: `Archive ${fund.name}?`,
+        text: 'It leaves your list and your total. Its history and balance are kept, and you can bring it back any time from the Archive below.',
+        confirmLabel: 'Archive',
+        action: 'archive',
+        fund
+      }
+    },
+    askDelete(fund) {
+      this.confirmation = {
+        isOpen: true,
+        pending: false,
+        title: `Delete ${fund.name} for good?`,
+        text: 'This cannot be undone. An account that has any history cannot be deleted — it stays in the archive.',
+        confirmLabel: 'Delete',
+        action: 'delete',
+        fund
+      }
+    },
+    async confirm() {
+      const { action, fund } = this.confirmation
+      const run = action === 'archive' ? archiveFund : deleteFund
+
+      this.confirmation.pending = true
+
+      try {
+        await run(fund._id)
+      } catch (error) {
+        this.showNotice(getFundActionMessage(error, action))
+      } finally {
+        this.confirmation.pending = false
+        this.confirmation.isOpen = false
+      }
+
+      // Also after a refusal: a 404 or a 409 means the lists on screen are stale
+      await this.refresh().catch(() => {})
+    },
+    async restore(fund) {
+      this.isBusy = true
+
+      try {
+        await restoreFund(fund._id)
+        await this.refresh()
+      } catch (error) {
+        this.showNotice(getFundActionMessage(error, 'restore'))
+      } finally {
+        this.isBusy = false
+      }
+    },
+    async refresh() {
+      await Promise.all([this.fetchFunds(), this.fetchArchived()])
     },
     async fetchFunds() {
-      const response = await sendRequest({
-        url: '/api/funds',
-        method: 'get'
-      })
+      const response = await fetchFunds()
 
       this.funds = response.funds
       this.total = response.total
+    },
+    async fetchArchived() {
+      try {
+        this.archived.funds = await fetchArchivedFunds()
+      } catch {
+        // The section is only a convenience; before the API knows it, it stays hidden
+        this.archived.funds = []
+      }
     }
   },
   async beforeMount() {
@@ -148,7 +291,7 @@ export default {
       return
     }
 
-    await this.fetchFunds()
+    await this.refresh()
   }
 }
 </script>

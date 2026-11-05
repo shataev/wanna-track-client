@@ -180,6 +180,7 @@ import {
   getExpenseErrorMessage,
   getFundDebit
 } from '@/utils/expense.utils'
+import { pickActiveFunds, withCostFund } from '@/utils/fund.utils'
 import { ROUTE_NAMES } from '@/router/router.constants'
 import { formatAmount, orderCurrencies } from '@/utils/currency.utils'
 
@@ -435,10 +436,15 @@ export default {
     this.categories = categories
     this.funds = [
       { _id: null, name: 'No fund', isDefault: false },
-      ...fundsResponse.funds
+      ...pickActiveFunds(fundsResponse.funds)
     ]
 
     if (this.isEditMode) {
+      if (!cost.error) {
+        // Not a choice for a new expense, but this one may already sit on it
+        this.funds = withCostFund(this.funds, cost)
+      }
+
       if (cost.error) {
         this.alert = {
           type: 'error',
