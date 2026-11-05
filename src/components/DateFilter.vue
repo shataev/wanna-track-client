@@ -38,7 +38,9 @@ import {
   getCurrentMonthRange,
   getCurrentWeekRange,
   getCurrentYearRange,
-  getDayEndByDate
+  getDayEndByDate,
+  getBangkokMonthRangeFor,
+  getBangkokYearMonth
 } from '@/utils/date.utils'
 
 import AppCalendar from '@/components/AppCalendar.vue'
@@ -106,7 +108,12 @@ export default {
       return currentDateFilter.calendarConfig
     },
     calendarModelValue() {
-      if (['day', 'month', 'year'].includes(this.value.periodName)) {
+      // A month is a Bangkok month, whatever the browser's timezone says about its first instant
+      if (this.value.periodName === 'month') {
+        return getBangkokYearMonth(this.value.dates[0])
+      }
+
+      if (['day', 'year'].includes(this.value.periodName)) {
         return this.value.dates[0]
       }
 
@@ -125,7 +132,8 @@ export default {
       if (this.value.periodName === 'month') {
         return this.value.dates[0].toLocaleDateString('en-US', {
           year: 'numeric',
-          month: 'long'
+          month: 'long',
+          timeZone: 'Asia/Bangkok'
         })
       }
 
@@ -183,10 +191,7 @@ export default {
 
         newValue.dates = [date, getDayEndByDate(date)]
       } else if (newValue.periodName === 'month') {
-        const dateFrom = new Date(value.year, value.month)
-        const dateTo = new Date(value.year, value.month + 1, 1, 0, 0, 0, -1)
-
-        newValue.dates = [dateFrom, dateTo]
+        newValue.dates = getBangkokMonthRangeFor(value.year, value.month)
       } else if (newValue.periodName === 'year') {
         const dateFrom = new Date(value, 0)
         const dateTo = new Date(value + 1, 0, 1, 0, 0, 0, -1)

@@ -4,6 +4,10 @@ import AppInputWithValidation from '@/components/AppInputWithValidation.vue'
 import AppButton from '@/components/AppButton.vue'
 import { useRequest } from '@/composables/useRequest'
 import { useRouter } from 'vue-router'
+import { onMounted, ref } from 'vue'
+import { fetchBudgets, setBudget } from '@/services/budgetsService'
+import { parseLimit } from '@/utils/budget.utils'
+import useUserStore from '@/stores/user'
 
 const { loading, fetchData } = useRequest()
 const router = useRouter()
@@ -13,8 +17,18 @@ const validationSchema = {
   icon: 'required'
 }
 
+const userStore = useUserStore()
+
 let categoryName = null
 let iconName = null
+
+// The limit is optional, and only offered when the API has budgets
+const monthlyLimit = ref('')
+const budgetsAvailable = ref(false)
+
+onMounted(async () => {
+  budgetsAvailable.value = Boolean(await fetchBudgets())
+})
 
 const getIconByName = (name) => {
   if (!name) {
@@ -30,11 +44,24 @@ const createCategory = async () => {
     icon: getIconByName(iconName)
   }
 
-  await fetchData({
+  const category = await fetchData({
     url: '/api/category',
     method: 'post',
     body: requestBody
   })
+
+  const limit = budgetsAvailable.value ? parseLimit(monthlyLimit.value) : null
+
+  if (category?._id && limit) {
+    // The category is saved either way; the limit can be set again from Expenses
+    try {
+      await setBudget(category._id, limit)
+    } catch (error) {
+      console.warn('[NewCategoryPage] monthly limit was not saved', error)
+    }
+  }
+
+  monthlyLimit.value = ''
 
   categoryName = null
   iconName = null
@@ -82,6 +109,25 @@ const createCategory = async () => {
               variant="outlined"
               hide-details="auto"
             ></app-input-with-validation>
+          </label>
+        </div>
+
+        <div v-if="budgetsAvailable" class="form-element-wrapper mb-4">
+          <label class="form-label text-app-light d-flex flex-column">
+            <span class="label-text mb-1">Monthly limit</span>
+            <span class="description-text mb-1">
+              Optional, in {{ userStore.user?.defaultCurrency }}. It never stops an expense.
+            </span>
+            <v-text-field
+              v-model="monthlyLimit"
+              type="text"
+              inputmode="decimal"
+              placeholder="No limit"
+              bg-color="transparent"
+              class="form-element form-element-input text-app-light"
+              variant="outlined"
+              hide-details="auto"
+            ></v-text-field>
           </label>
         </div>
       </v-form>
