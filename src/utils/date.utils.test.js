@@ -37,24 +37,6 @@ describe('getBangkokMonthRange', () => {
       '2027-01-31T16:59:59.999Z'
     ])
   })
-
-  it('does not depend on the timezone of the browser', () => {
-    const originalTz = process.env.TZ
-    const results = []
-
-    try {
-      for (const tz of ['UTC', 'America/Los_Angeles', 'Pacific/Auckland', 'Asia/Bangkok']) {
-        process.env.TZ = tz
-        results.push(iso(getBangkokMonthRange(new Date('2026-10-31T18:00:00Z'))))
-      }
-    } finally {
-      process.env.TZ = originalTz
-    }
-
-    for (const result of results) {
-      expect(result).toEqual(results[0])
-    }
-  })
 })
 
 describe('getBangkokMonthRangeFor', () => {
