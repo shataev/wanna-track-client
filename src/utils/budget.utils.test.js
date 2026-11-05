@@ -5,6 +5,7 @@ import {
   getBudgetBar,
   getBudgetColors,
   getLimitPrefill,
+  getLimitStripStyles,
   getRemainingPerDay,
   hasBudgetState,
   parseLimit,
@@ -70,6 +71,29 @@ describe('getBudgetBar', () => {
   })
 })
 
+describe('getLimitStripStyles', () => {
+  it('is spent/limit of the strip wide, in the state colour, with the tick at the pace', () => {
+    expect(getLimitStripStyles({ fill: 0.71, pace: 0.4, color: '#FFDA4D' })).toEqual({
+      fill: { width: '71%', backgroundColor: '#FFDA4D' },
+      tick: { left: '40%' }
+    })
+  })
+
+  it('never goes past the strip, however far over the limit', () => {
+    const bar = getBudgetBar({ spent: 6680, limit: 3000 }, 40)
+
+    expect(getLimitStripStyles({ ...bar, color: '#F4A261' }).fill.width).toBe('100%')
+    expect(getLimitStripStyles({ fill: 5, pace: 3, color: 'x' })).toMatchObject({
+      fill: { width: '100%' },
+      tick: { left: '100%' }
+    })
+  })
+
+  it('is empty with nothing spent', () => {
+    expect(getLimitStripStyles({ fill: 0, pace: 0.2, color: 'x' }).fill.width).toBe('0%')
+  })
+})
+
 describe('formatBudgetValue', () => {
   it('reads spent / limit with the symbol', () => {
     expect(formatBudgetValue({ spent: 2140, limit: 3000, currency: 'THB' }, '฿')).toBe('2,140 / 3,000 ฿')
@@ -86,8 +110,14 @@ describe('describeBudgetRow', () => {
 
   it('shows the limit, what is left and the daily allowance', () => {
     expect(describeBudgetRow({ ...base, remaining: 860 }, period, money)).toBe(
-      '3000 THB · left 860 THB · ~33 THB/day'
+      '3000 THB · left 860 THB · ~33\u00A0THB/day'
     )
+  })
+
+  it('keeps the daily allowance on one line: no breaking space inside it', () => {
+    const text = describeBudgetRow({ ...base, remaining: 860 }, period, money)
+
+    expect(text.split(' · ')[2]).not.toMatch(/ /)
   })
 
   it('shows how far over and no daily allowance', () => {
@@ -110,7 +140,7 @@ describe('a limit with nothing spent', () => {
   })
 
   it('has the whole limit left and a daily allowance in the row', () => {
-    expect(describeBudgetRow(untouched, period, money)).toBe('3000 THB · left 3000 THB · ~115 THB/day')
+    expect(describeBudgetRow(untouched, period, money)).toBe('3000 THB · left 3000 THB · ~115\u00A0THB/day')
   })
 })
 

@@ -105,6 +105,12 @@ export default {
   word-break: break-word;
 }
 
+.budget-sheet :deep(.v-field__input),
+.budget-sheet :deep(.v-text-field__suffix) {
+  color: #f6fdeb;
+  opacity: 1;
+}
+
 .sheet-hint {
   font-size: 14px;
   opacity: 0.85;

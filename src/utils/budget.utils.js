@@ -48,6 +48,22 @@ export const getBudgetBar = (budget, pacePercent) => {
 }
 
 /**
+ * Inline styles of the limit strip along the bottom of a category button: the fill in
+ * the state colour, spent/limit of the strip wide and never wider than it, and the pace tick.
+ *
+ * @param {{fill: number, pace: number, color: string}} bar
+ * @returns {{fill: {width: string, backgroundColor: string}, tick: {left: string}}}
+ */
+export const getLimitStripStyles = ({ fill, pace, color }) => {
+  const share = (value) => Math.min(1, Math.max(0, Number(value) || 0)) * 100
+
+  return {
+    fill: { width: `${share(fill)}%`, backgroundColor: color },
+    tick: { left: `${share(pace)}%` }
+  }
+}
+
+/**
  * The value of a category button: `2 140 / 3 000 ฿`.
  */
 export const formatBudgetValue = (budget, symbol = '') => {
@@ -82,7 +98,8 @@ export const describeBudgetRow = (budget, period, formatMoney) => {
     const perDay = getRemainingPerDay(budget, period)
 
     if (perDay !== null) {
-      parts.push(`~${formatMoney(perDay, budget.currency)}/day`)
+      // One unbreakable piece: "~33 ฿/day" must not wrap between the amount and the symbol
+    parts.push(`~${formatMoney(perDay, budget.currency)}/day`.replace(/ /g, '\u00A0'))
     }
   }
 

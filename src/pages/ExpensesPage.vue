@@ -62,11 +62,10 @@
         :name="expense.category"
         :value="expense.amount"
         :currency="expense.currency"
-        :color="getCategoryBar(expense).color || expense.color || getButtonBackgroundColor(index)"
-        :progress="getCategoryBar(expense).progress"
+        :color="expense.color || getButtonBackgroundColor(index)"
+        :progress="1"
         :value-text="getCategoryBar(expense).valueText"
-        :pace="getCategoryBar(expense).pace"
-        :name-color="getCategoryBar(expense).nameColor"
+        :limit-bar="getCategoryBar(expense).limitBar"
         @click="toggleCategory(expense._id)"
       >
       </app-value-button>
@@ -267,11 +266,6 @@ export default {
     async 'dateFilter.dates'() {
       await this.fetchExpenses()
     },
-    showBudgets(isShown) {
-      if (isShown) {
-        this.fetchBudgetData()
-      }
-    },
     async selectedTag() {
       this.expandedCategory = null
       await this.fetchExpenses()
@@ -433,23 +427,19 @@ export default {
         console.warn('[ExpensesPage] tags are not available', error)
       }
     },
-    // How a category button looks: today's full bar, or spent / limit with the pace tick
+    // A category with a limit keeps today's button and gets a strip along its bottom edge
     getCategoryBar(expense) {
       const budget = this.showBudgets ? this.budgetByCategory[expense._id] : null
 
       if (!hasBudgetState(budget)) {
-        return { progress: 1, valueText: '', pace: null, nameColor: '', color: '' }
+        return { valueText: '', limitBar: null }
       }
 
       const { fill, pace } = getBudgetBar(budget, this.budgetsData.pacePercent)
-      const colors = getBudgetColors(budget.state)
 
       return {
-        progress: fill,
         valueText: formatBudgetValue(budget, this.currenciesStore.getSymbolByCode(budget.currency)),
-        pace,
-        nameColor: colors.color,
-        color: colors.backgroundColor
+        limitBar: { fill, pace, color: getBudgetColors(budget.state).backgroundColor }
       }
     },
     async fetchBudgetData() {
