@@ -48,8 +48,10 @@
           rounded="xl"
           class="mb-3 text-app-light"
           color="rgb(246 253 235 / 6%)"
-          :prepend-icon="fund.icon"
         >
+          <template v-if="fund.icon" #prepend>
+            <v-icon>{{ fund.icon }}</v-icon>
+          </template>
           <template #title>
             <div class="d-flex justify-space-between">
               <span>{{ fund.name }}</span>
@@ -75,7 +77,7 @@
 
   <v-dialog v-model="confirmation.isOpen" max-width="400">
     <v-card class="pa-4">
-      <v-card-title class="px-0">{{ confirmation.title }}</v-card-title>
+      <v-card-title class="px-0 text-wrap">{{ confirmation.title }}</v-card-title>
       <v-card-text class="px-0">{{ confirmation.text }}</v-card-text>
       <v-card-actions class="px-0">
         <v-spacer></v-spacer>
