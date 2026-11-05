@@ -1,19 +1,73 @@
 export const getCurrentYear = () => new Date().getFullYear()
 export const getCurrentMonth = () => new Date().getMonth()
 
-export const getFirstDayOfCurrentMonth = () => {
-  const currentYear = getCurrentYear()
-  const currentMonth = getCurrentMonth()
+// The API cuts months on the Asia/Bangkok calendar (UTC+7, no daylight saving), so a month
+// built from the browser's clock would disagree with it near a boundary when the owner is
+// abroad: the Expenses total, the budgets and Analytics have to cover the same instants.
+const BANGKOK_OFFSET_MS = 7 * 60 * 60 * 1000
 
-  return new Date(currentYear, currentMonth)
+/**
+ * The Bangkok calendar month containing `now`, as the instants the API uses.
+ *
+ * @param {Date} [now]
+ * @returns {[Date, Date]} first millisecond and last millisecond of the month
+ */
+export const getBangkokMonthRange = (now = new Date()) => {
+  const { year, month } = getBangkokYearMonth(now)
+
+  return [
+    new Date(Date.UTC(year, month, 1) - BANGKOK_OFFSET_MS),
+    new Date(Date.UTC(year, month + 1, 1) - BANGKOK_OFFSET_MS - 1)
+  ]
 }
 
-export const getLastDayOfCurrentMonth = () => {
-  const currentYear = getCurrentYear()
-  const currentMonth = getCurrentMonth()
+/**
+ * @param {Date} [date]
+ * @returns {{year: number, month: number}} the Bangkok calendar month of the instant, month 0-11
+ */
+export const getBangkokYearMonth = (date = new Date()) => {
+  const shifted = new Date(date.getTime() + BANGKOK_OFFSET_MS)
 
-  return new Date(currentYear, currentMonth + 1, 1, 0, 0, 0, -1)
+  return { year: shifted.getUTCFullYear(), month: shifted.getUTCMonth() }
 }
+
+/**
+ * The Bangkok month `year`/`month` (0-11), as the instants the API uses.
+ *
+ * @returns {[Date, Date]}
+ */
+export const getBangkokMonthRangeFor = (year, month) =>
+  getBangkokMonthRange(new Date(Date.UTC(year, month, 15)))
+
+/**
+ * @param {Array<Date|string>} dates - the selected period
+ * @param {Date} [now]
+ * @returns {boolean} true when the period is exactly the current Bangkok month
+ */
+export const isCurrentBangkokMonth = (dates, now = new Date()) => {
+  if (!Array.isArray(dates) || dates.length < 2) {
+    return false
+  }
+
+  const [from, to] = getBangkokMonthRange(now)
+
+  return new Date(dates[0]).getTime() === from.getTime() && new Date(dates[1]).getTime() === to.getTime()
+}
+
+/**
+ * @param {Date} [now]
+ * @returns {string} 'YYYY-MM' of the Bangkok month before the one containing `now`
+ */
+export const getPreviousBangkokMonthKey = (now = new Date()) => {
+  const { year, month } = getBangkokYearMonth(now)
+  const previous = new Date(Date.UTC(year, month - 1, 1))
+
+  return `${previous.getUTCFullYear()}-${String(previous.getUTCMonth() + 1).padStart(2, '0')}`
+}
+
+export const getFirstDayOfCurrentMonth = () => getBangkokMonthRange()[0]
+
+export const getLastDayOfCurrentMonth = () => getBangkokMonthRange()[1]
 
 export const getTodayBeginning = () => {
   const today = new Date()
@@ -48,12 +102,7 @@ export const getCurrentWeekRange = () => {
   ]
 }
 
-export const getCurrentMonthRange = () => {
-  const currentMonthFirstDate = getFirstDayOfCurrentMonth()
-  const currentMonthLastDate = getLastDayOfCurrentMonth()
-
-  return [currentMonthFirstDate, currentMonthLastDate]
-}
+export const getCurrentMonthRange = () => getBangkokMonthRange()
 
 export const getCurrentYearRange = () => {
   const currentYear = new Date().getFullYear()
