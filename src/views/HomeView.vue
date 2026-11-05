@@ -45,7 +45,7 @@
       value="funds"
       class="app-tabs-button text-none text-app-dark"
       :class="tabClass('funds')"
-      >Savings</v-btn
+      >Funds</v-btn
     >
     <v-btn
       rounded="pill"
