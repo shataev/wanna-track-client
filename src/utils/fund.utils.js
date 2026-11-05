@@ -72,17 +72,13 @@ export const groupFundsByKind = (funds = []) => ({
 })
 
 /**
- * Items for a fund `v-select`: accounts, then a "Savings" subheader and the savings.
- * Without savings the list is the funds untouched.
+ * Items for a fund `v-select`: accounts, then savings titled "🐷 <name>" (the marker the
+ * bot uses). Only funds, so every item can be picked; the originals stay untouched.
  */
 export const buildFundPickerItems = (funds = []) => {
   const { accounts, savings } = groupFundsByKind(funds)
 
-  if (!savings.length) {
-    return accounts
-  }
-
-  return [...accounts, { type: 'subheader', title: 'Savings' }, ...savings]
+  return [...accounts, ...savings.map((fund) => ({ ...fund, name: `🐷 ${fund.name}` }))]
 }
 
 /**

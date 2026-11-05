@@ -1,5 +1,5 @@
 <template>
-  <inner-page-layout title="Add New Fund">
+  <inner-page-layout :title="isEditMode ? 'Edit Fund' : 'Add New Fund'">
     <vee-form :validation-schema="validationSchema" @submit="handleSubmit">
       <v-form>
         <div class="form-element-wrapper mb-4">
@@ -90,8 +90,8 @@
             mandatory
             divided
             rounded="pill"
-            color="#CAE39D"
-            class="text-app-light"
+            variant="outlined"
+            class="kind-toggle"
           >
             <v-btn value="account">Account</v-btn>
             <v-btn value="savings">Savings</v-btn>
@@ -300,6 +300,25 @@ const handleSubmit = async () => {
 </script>
 
 <style scoped lang="scss">
+// Site palette: light text on the dark page, the chosen side filled with the light green
+.kind-toggle {
+  border-color: #f6fdeb;
+
+  :deep(.v-btn) {
+    color: #f6fdeb;
+    border-color: #f6fdeb;
+  }
+
+  :deep(.v-btn--active) {
+    background-color: #cae39d;
+    color: #3f3d36;
+  }
+
+  :deep(.v-btn--active .v-btn__overlay) {
+    opacity: 0;
+  }
+}
+
 .form-label {
   font-weight: 400;
   font-size: 24px;

@@ -98,7 +98,7 @@ describe('groupFundsByKind', () => {
 })
 
 describe('buildFundPickerItems', () => {
-  it('lists accounts, then a Savings subheader, then savings', () => {
+  it('lists accounts first, then savings marked with a pig', () => {
     const none = { _id: null, name: 'No fund' }
     const cash = { _id: 'a', name: 'Cash' }
     const trip = { _id: 's', name: 'Trip', kind: 'savings' }
@@ -106,13 +106,22 @@ describe('buildFundPickerItems', () => {
     expect(buildFundPickerItems([trip, none, cash])).toEqual([
       none,
       cash,
-      { type: 'subheader', title: 'Savings' },
-      trip
+      { ...trip, name: '🐷 Trip' }
     ])
   })
 
-  it('adds no subheader without savings', () => {
-    const funds = [{ _id: 'a' }]
+  it('holds only funds: every item has an id key and a name', () => {
+    const items = buildFundPickerItems([
+      { _id: 's', name: 'Trip', kind: 'savings' },
+      { _id: null, name: 'No fund' },
+      { _id: 'a', name: 'Cash' }
+    ])
+
+    expect(items.every((item) => '_id' in item && typeof item.name === 'string' && !item.type)).toBe(true)
+  })
+
+  it('leaves an API without kind as it was', () => {
+    const funds = [{ _id: 'a', name: 'Cash' }]
 
     expect(buildFundPickerItems(funds)).toEqual(funds)
   })
