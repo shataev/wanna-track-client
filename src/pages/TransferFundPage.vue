@@ -7,7 +7,7 @@
               <v-select
                 :model-value="sourceFund"
                 v-bind="sourceFundAttrs"
-                :items="funds"
+                :items="sourceFundItems"
                 item-title="name"
                 item-value="_id"
                 class="form-element form-element-input text-app-light"
@@ -28,7 +28,7 @@
               <v-select
                 :model-value="targetFund"
                 v-bind="targetFundAttrs"
-                :items="availableTargetFunds"
+                :items="targetFundItems"
                 item-title="name"
                 item-value="_id"
                 class="form-element form-element-input text-app-light"
@@ -96,7 +96,7 @@ import {
 import { useRouter, useRoute } from 'vue-router'
 import { ref, computed, onBeforeMount, reactive } from 'vue'
 import { useForm } from 'vee-validate'
-import { pickActiveFunds } from '@/utils/fund.utils'
+import { buildFundPickerItems, pickActiveFunds } from '@/utils/fund.utils'
 
 const { loading, fetchData } = useRequest()
 const router = useRouter()
@@ -117,6 +117,9 @@ const selectedTargetFund = computed(() => {
 const availableTargetFunds = computed(() => {
   return funds.value.filter(fund => fund._id !== sourceFund.value);
 });
+
+const sourceFundItems = computed(() => buildFundPickerItems(funds.value))
+const targetFundItems = computed(() => buildFundPickerItems(availableTargetFunds.value))
 
 // The API converts on its own, this only shows what is about to happen
 const conversion = computed(() => {
@@ -166,9 +169,10 @@ const [targetFund, targetFundAttrs] = defineField('targetFund');
 const [amount, amountAttrs] = defineField('amount');
 
 const setSourceFundValue = (value) => {
+  // A target chosen before the source (Top up) stays, unless it is now the source
   resetForm({ values: {
     sourceFund: value,
-    targetFund: '',
+    targetFund: targetFund.value === value ? '' : targetFund.value,
     amount: ''
   } });
 }
@@ -191,7 +195,10 @@ onBeforeMount(async () => {
 
   resetForm({ values: {
     sourceFund: route.query.sourceFundId,
-    targetFund: '',
+    // "Top up" on a savings card; an id that is not one of the funds is ignored
+    targetFund: funds.value.some(fund => fund._id === route.query.targetFundId)
+      ? route.query.targetFundId
+      : '',
     amount: ''
   } });
 });
