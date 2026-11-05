@@ -7,7 +7,8 @@ import {
   getLimitPrefill,
   getRemainingPerDay,
   hasBudgetState,
-  parseLimit
+  parseLimit,
+  withBudgetOnlyCategories
 } from '@/utils/budget.utils'
 import { ALERT_COLORS, DELTA_COLORS } from '@/constants/colors.constants'
 
@@ -97,6 +98,52 @@ describe('describeBudgetRow', () => {
     expect(describeBudgetRow({ ...base, currencyMismatch: true, state: null }, period, money)).toMatch(
       /another currency/
     )
+  })
+})
+
+describe('a limit with nothing spent', () => {
+  const untouched = { limit: 3000, spent: 0, remaining: 3000, currency: 'THB', state: 'on_track' }
+
+  it('reads 0 / limit, with an empty bar', () => {
+    expect(formatBudgetValue(untouched, '฿')).toBe('0 / 3,000 ฿')
+    expect(getBudgetBar(untouched, 16.7).fill).toBe(0)
+  })
+
+  it('has the whole limit left and a daily allowance in the row', () => {
+    expect(describeBudgetRow(untouched, period, money)).toBe('3000 THB · left 3000 THB · ~115 THB/day')
+  })
+})
+
+describe('withBudgetOnlyCategories', () => {
+  const food = { _id: 'c1', category: 'Food', icon: 'mdi-food', amount: 500, currency: 'THB', costs: [{}] }
+  const budget = (id, name) => ({ category: { id, name, icon: `mdi-${name}` }, currency: 'THB', limit: 3000 })
+
+  it('adds a limited category with no expenses, with nothing spent', () => {
+    const rows = withBudgetOnlyCategories([food], [budget('c1', 'Food'), budget('c2', 'Taxi')])
+
+    expect(rows).toEqual([
+      food,
+      { _id: 'c2', category: 'Taxi', icon: 'mdi-Taxi', amount: 0, currency: 'THB', costs: [] }
+    ])
+  })
+
+  it('is every limited category at the start of a month', () => {
+    expect(withBudgetOnlyCategories([], [budget('c1', 'Food'), budget('c2', 'Taxi')]).map((row) => row._id)).toEqual([
+      'c1',
+      'c2'
+    ])
+  })
+
+  it('does not repeat a category that is already listed, and returns the same list when nothing is missing', () => {
+    const expenses = [food]
+
+    expect(withBudgetOnlyCategories(expenses, [budget('c1', 'Food')])).toBe(expenses)
+    expect(withBudgetOnlyCategories(expenses, [])).toBe(expenses)
+    expect(withBudgetOnlyCategories(expenses, [budget('c2', 'Taxi'), budget('c2', 'Taxi')])).toHaveLength(2)
+  })
+
+  it('ignores a budget without a category', () => {
+    expect(withBudgetOnlyCategories([], [{ currency: 'THB' }])).toEqual([])
   })
 })
 

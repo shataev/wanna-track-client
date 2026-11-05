@@ -90,6 +90,39 @@ export const describeBudgetRow = (budget, period, formatMoney) => {
 }
 
 /**
+ * The category rows of the Expenses page: the categories with expenses, then every
+ * category that has a limit but no expense in the period, with nothing spent. At the
+ * start of a month that is every limited category, and the limit is what the owner
+ * wants to see then.
+ *
+ * @param {Array<{_id: string}>} expenses - the page's categories
+ * @param {Array<{category: {id, name, icon}, currency: string}>} budgets
+ * @returns {Array} `expenses` itself when there is nothing to add
+ */
+export const withBudgetOnlyCategories = (expenses = [], budgets = []) => {
+  const shown = new Set(expenses.map(({ _id }) => _id))
+  const missing = []
+
+  for (const budget of budgets) {
+    const category = budget?.category
+
+    if (category?.id && !shown.has(category.id)) {
+      shown.add(category.id)
+      missing.push({
+        _id: category.id,
+        category: category.name,
+        icon: category.icon,
+        amount: 0,
+        currency: budget.currency,
+        costs: []
+      })
+    }
+  }
+
+  return missing.length ? [...expenses, ...missing] : expenses
+}
+
+/**
  * Starting value for the limit field: the current limit, else what the category
  * took last month, else empty.
  *

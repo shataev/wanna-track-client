@@ -56,7 +56,7 @@
   </div>
 
   <div class="values">
-    <template v-for="(expense, index) in expenses" :key="expense._id">
+    <template v-for="(expense, index) in categoryRows" :key="expense._id">
       <app-value-button
         :icon="expense.icon"
         :name="expense.category"
@@ -178,7 +178,8 @@ import {
   getBudgetBar,
   getBudgetColors,
   getLimitPrefill,
-  hasBudgetState
+  hasBudgetState,
+  withBudgetOnlyCategories
 } from '@/utils/budget.utils'
 import { fetchTags } from '@/services/tagsService'
 import { deleteCost } from '@/services/costService'
@@ -298,6 +299,13 @@ export default {
     // against old spending, and a tag looks at all time
     showBudgets() {
       return Boolean(this.budgetsData) && !this.selectedTag && isCurrentBangkokMonth(this.dateFilter.dates)
+    },
+    // Categories with a limit stay on the page without expenses in the month; the chart
+    // and the total keep to the real expenses
+    categoryRows() {
+      return this.showBudgets
+        ? withBudgetOnlyCategories(this.expenses, this.budgetsData.budgets)
+        : this.expenses
     },
     budgetByCategory() {
       const byCategory = {}
@@ -515,7 +523,8 @@ export default {
       await this.fetchBudgetData()
     },
     getButtonBackgroundColor(index) {
-      return this.colors[index]
+      // Rows added for a limit have no slice in the chart, so no colour in its scale
+      return this.colors[index] || BUTTON_BACKGROUND_COLORS[0]
     },
     onDateFilterInput(value) {
       this.dateFilter = value

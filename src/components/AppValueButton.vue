@@ -82,7 +82,9 @@ export default {
     progressLayoutStyles() {
       return {
         background: `linear-gradient(90deg, ${this.color}, transparent)`,
-        width: `${this.progress * 100}%`
+        width: `${this.progress * 100}%`,
+        // Nothing spent is an empty bar, not the minimum sliver
+        ...(this.progress > 0 ? {} : { minWidth: '0' })
       }
     },
     paceTickStyles() {

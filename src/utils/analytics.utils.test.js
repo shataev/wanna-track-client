@@ -15,6 +15,7 @@ import {
   OTHER_CATEGORY_ID,
   toPeriodQuery
 } from '@/utils/analytics.utils'
+import { isCurrentBangkokMonth } from '@/utils/date.utils'
 import { DELTA_COLORS, TREND_COLORS, TREND_OTHER_COLOR } from '@/constants/colors.constants'
 
 describe('getChange', () => {
@@ -112,17 +113,21 @@ describe('getDeltaStyle', () => {
 })
 
 describe('getMonthRange', () => {
-  it('answers the local first and last moment of the month', () => {
+  it('answers the first and last moment of the Bangkok month', () => {
     const [from, to] = getMonthRange('2026-02')
 
-    expect(from).toEqual(new Date(2026, 1, 1))
-    expect(to).toEqual(new Date(2026, 1, 28, 23, 59, 59, 999))
+    expect(from.toISOString()).toBe('2026-01-31T17:00:00.000Z')
+    expect(to.toISOString()).toBe('2026-02-28T16:59:59.999Z')
   })
 
   it('handles December into the next year', () => {
     const [, to] = getMonthRange('2025-12')
 
-    expect(to).toEqual(new Date(2025, 11, 31, 23, 59, 59, 999))
+    expect(to.toISOString()).toBe('2025-12-31T16:59:59.999Z')
+  })
+
+  it('is the same month the Expenses page treats as current', () => {
+    expect(isCurrentBangkokMonth(getMonthRange('2026-11'), new Date('2026-11-05T10:00:00Z'))).toBe(true)
   })
 
   it('answers null for anything that is not a month', () => {
@@ -135,6 +140,11 @@ describe('getMonthRange', () => {
 describe('formatMonthLabel', () => {
   it('is a short month with a two-digit year', () => {
     expect(formatMonthLabel('2026-10')).toBe('Oct 26')
+  })
+
+  it('names the Bangkok month although its first instant is the day before in UTC', () => {
+    expect(getMonthRange('2026-11')[0].toISOString()).toBe('2026-10-31T17:00:00.000Z')
+    expect(formatMonthLabel('2026-11')).toBe('Nov 26')
   })
 })
 
