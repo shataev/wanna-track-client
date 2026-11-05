@@ -1,4 +1,5 @@
 import { formatAmount } from '@/utils/currency.utils'
+import { getBangkokMonthRangeFor } from '@/utils/date.utils'
 import { DELTA_COLORS, TREND_COLORS, TREND_OTHER_COLOR } from '@/constants/colors.constants'
 
 const MINUS = '−'
@@ -91,8 +92,8 @@ export const getDeltaStyle = (current, previous) =>
   DELTA_COLORS[getChange(current, previous).direction]
 
 /**
- * Local start and end of a month given as 'YYYY-MM', in the shape DateFilter
- * produces for its month picker.
+ * Start and end of a month given as 'YYYY-MM' on the Asia/Bangkok calendar, the instants
+ * the API and the DateFilter month picker use.
  *
  * @param {string} month
  * @returns {[Date, Date]|null}
@@ -111,7 +112,7 @@ export const getMonthRange = (month) => {
     return null
   }
 
-  return [new Date(year, monthIndex), new Date(year, monthIndex + 1, 1, 0, 0, 0, -1)]
+  return getBangkokMonthRangeFor(year, monthIndex)
 }
 
 /**
@@ -125,7 +126,8 @@ export const formatMonthLabel = (month) => {
     return month || ''
   }
 
-  return range[0].toLocaleDateString('en-US', { month: 'short', year: '2-digit' })
+  // The range starts at Bangkok midnight, which is the previous day in a timezone west of it
+  return range[0].toLocaleDateString('en-US', { month: 'short', year: '2-digit', timeZone: 'Asia/Bangkok' })
 }
 
 export const OTHER_CATEGORY_ID = 'other'

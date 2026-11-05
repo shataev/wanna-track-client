@@ -24,3 +24,11 @@ export const ALERT_COLORS = { color: '#3F3D36', backgroundColor: '#F4A261' }
 // against #5F5B53, the darkest end of the page background
 export const TREND_COLORS = ['#FFDA4D', '#9CC7F0', '#CAE39D', '#C3B2F5', '#8FD9C4', '#FF9EC0']
 export const TREND_OTHER_COLOR = '#CFD2C4'
+
+// Budget state, shared with the bot: the same warm palette as the rest of the page, never red.
+// Text on a filled bar is the dark olive, as on the alert and the delta pills
+export const BUDGET_COLORS = {
+  on_track: { color: '#3F3D36', backgroundColor: DELTA_COLORS.down.backgroundColor },
+  ahead: { color: '#3F3D36', backgroundColor: '#FFDA4D' },
+  over: { color: ALERT_COLORS.color, backgroundColor: ALERT_COLORS.backgroundColor }
+}

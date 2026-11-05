@@ -56,7 +56,7 @@
   </div>
 
   <div class="values">
-    <template v-for="(expense, index) in expenses" :key="expense._id">
+    <template v-for="(expense, index) in categoryRows" :key="expense._id">
       <app-value-button
         :icon="expense.icon"
         :name="expense.category"
@@ -64,11 +64,26 @@
         :currency="expense.currency"
         :color="expense.color || getButtonBackgroundColor(index)"
         :progress="1"
+        :value-text="getCategoryBar(expense).valueText"
+        :limit-bar="getCategoryBar(expense).limitBar"
         @click="toggleCategory(expense._id)"
       >
       </app-value-button>
 
       <div v-if="expandedCategory === expense._id" class="costs mb-3">
+        <div v-if="showBudgets" class="budget-row d-flex align-center text-app-light">
+          <div class="budget-row-text flex-grow-1">
+            Monthly limit: {{ describeBudgetRow(budgetByCategory[expense._id] ?? null, budgetPeriod, formatWithSymbol) }}
+          </div>
+          <v-btn
+            icon="mdi-pencil-outline"
+            variant="text"
+            size="small"
+            color="app-light"
+            aria-label="Set monthly limit"
+            @click="openBudgetSheet(expense)"
+          ></v-btn>
+        </div>
         <div v-for="cost in sortByDateDesc(expense.costs)" :key="cost._id" class="cost text-app-light">
           <div class="d-flex justify-space-between align-start">
             <div class="cost-description">
@@ -113,6 +128,19 @@
     </template>
   </div>
 
+  <budget-sheet
+    v-model="budgetSheet.isOpen"
+    :category-name="budgetSheet.categoryName"
+    :currency="displayCurrency"
+    :symbol="currenciesStore.getSymbolByCode(displayCurrency)"
+    :prefill="budgetSheet.prefill"
+    :has-limit="Boolean(budgetSheet.categoryId && budgetByCategory[budgetSheet.categoryId])"
+    :pending="budgetSheet.pending"
+    :failure="budgetSheet.failure"
+    @save="saveBudget"
+    @remove="deleteBudget"
+  />
+
   <v-dialog v-model="deletion.isOpen" max-width="400">
     <v-card class="pa-4">
       <v-card-text class="px-0">{{ deletion.question }}</v-card-text>
@@ -132,14 +160,26 @@ import { Doughnut } from 'vue-chartjs'
 import chroma from 'chroma-js'
 import { Chart as ChartJS, ArcElement } from 'chart.js'
 import AppValueButton from '@/components/AppValueButton.vue'
+import BudgetSheet from '@/components/BudgetSheet.vue'
 import sendRequest from '@/api/sendRequest'
 import useUserStore from '@/stores/user'
 import useCurrenciesStore from '@/stores/currencies'
 import { mapStores } from 'pinia'
 import DateFilter from '@/components/DateFilter.vue'
-import { getCurrentMonthRange } from '@/utils/date.utils'
+import { getCurrentMonthRange, getPreviousBangkokMonthKey, isCurrentBangkokMonth } from '@/utils/date.utils'
 import { formatAmount } from '@/utils/currency.utils'
 import { ALERT_COLORS, BUTTON_BACKGROUND_COLORS } from '@/constants/colors.constants'
+import { fetchBudgets, removeBudget, setBudget } from '@/services/budgetsService'
+import { fetchAnalyticsMonthly } from '@/services/analyticsService'
+import {
+  describeBudgetRow,
+  formatBudgetValue,
+  getBudgetBar,
+  getBudgetColors,
+  getLimitPrefill,
+  hasBudgetState,
+  withBudgetOnlyCategories
+} from '@/utils/budget.utils'
 import { fetchTags } from '@/services/tagsService'
 import { deleteCost } from '@/services/costService'
 import { formatTag } from '@/utils/tags.utils'
@@ -181,7 +221,7 @@ const centerText = {
 
 export default {
   name: 'ExpensesPage',
-  components: { DateFilter, AppValueButton, Doughnut },
+  components: { DateFilter, AppValueButton, BudgetSheet, Doughnut },
   data() {
     return {
       expenses: [],
@@ -208,7 +248,18 @@ export default {
         text: ''
       },
       // Only the response to the latest request may fill the page
-      expensesRequestId: 0
+      expensesRequestId: 0,
+      // GET /api/budgets for the current Bangkok month; null while loading and when the
+      // API does not have budgets, in which case the page looks as it did before them
+      budgetsData: null,
+      budgetSheet: {
+        isOpen: false,
+        categoryId: null,
+        categoryName: '',
+        prefill: '',
+        pending: false,
+        failure: ''
+      }
     }
   },
   watch: {
@@ -237,6 +288,32 @@ export default {
       const summary = this.tags.find(({ tag }) => tag === this.selectedTag)
 
       return summary ?? { total: this.total, currency: this.displayCurrency }
+    },
+    // Limits are for the current month only: a past month would show today's limit
+    // against old spending, and a tag looks at all time
+    showBudgets() {
+      return Boolean(this.budgetsData) && !this.selectedTag && isCurrentBangkokMonth(this.dateFilter.dates)
+    },
+    // Categories with a limit stay on the page without expenses in the month; the chart
+    // and the total keep to the real expenses
+    categoryRows() {
+      return this.showBudgets
+        ? withBudgetOnlyCategories(this.expenses, this.budgetsData.budgets)
+        : this.expenses
+    },
+    budgetByCategory() {
+      const byCategory = {}
+
+      for (const budget of this.budgetsData?.budgets ?? []) {
+        byCategory[budget.category?.id] = budget
+      }
+
+      return byCategory
+    },
+    budgetPeriod() {
+      const { daysInMonth, elapsedDays } = this.budgetsData ?? {}
+
+      return { daysInMonth, elapsedDays }
     },
     // The API converts every category into the user's base currency
     displayCurrency() {
@@ -290,6 +367,7 @@ export default {
     }
   },
   methods: {
+    describeBudgetRow,
     formatAmount,
     formatTag,
     formatWithSymbol(amount, currencyCode) {
@@ -339,7 +417,7 @@ export default {
       }
 
       // Also after a refusal: an expense already deleted elsewhere leaves the list
-      await Promise.all([this.fetchExpenses(), this.fetchTags()])
+      await Promise.all([this.fetchExpenses(), this.fetchTags(), this.fetchBudgetData()])
     },
     async fetchTags() {
       // The filter only helps; the breakdown works without it
@@ -349,8 +427,94 @@ export default {
         console.warn('[ExpensesPage] tags are not available', error)
       }
     },
+    // A category with a limit keeps today's button and gets a strip along its bottom edge
+    getCategoryBar(expense) {
+      const budget = this.showBudgets ? this.budgetByCategory[expense._id] : null
+
+      if (!hasBudgetState(budget)) {
+        return { valueText: '', limitBar: null }
+      }
+
+      const { fill, pace } = getBudgetBar(budget, this.budgetsData.pacePercent)
+
+      return {
+        valueText: formatBudgetValue(budget, this.currenciesStore.getSymbolByCode(budget.currency)),
+        limitBar: { fill, pace, color: getBudgetColors(budget.state).backgroundColor }
+      }
+    },
+    async fetchBudgetData() {
+      this.budgetsData = await fetchBudgets()
+    },
+    async openBudgetSheet(expense) {
+      const budget = this.budgetByCategory[expense._id] ?? null
+
+      this.budgetSheet = {
+        isOpen: true,
+        categoryId: expense._id,
+        categoryName: expense.category,
+        prefill: getLimitPrefill(budget, null),
+        pending: false,
+        failure: ''
+      }
+
+      if (!budget) {
+        const lastMonthTotal = await this.fetchLastMonthTotal(expense._id)
+
+        // Still the same sheet, and the owner has not changed what it starts with
+        if (this.budgetSheet.categoryId === expense._id) {
+          this.budgetSheet.prefill = getLimitPrefill(null, lastMonthTotal)
+        }
+      }
+    },
+    // Only a starting suggestion: nothing to show when it cannot be had
+    async fetchLastMonthTotal(categoryId) {
+      try {
+        const { months = [] } = await fetchAnalyticsMonthly(2)
+        const month = months.find((item) => item.month === getPreviousBangkokMonthKey())
+
+        return month?.categories?.find((category) => category.id === categoryId)?.total ?? null
+      } catch (error) {
+        console.warn('[ExpensesPage] last month is not available', error)
+
+        return null
+      }
+    },
+    async saveBudget(amount) {
+      await this.changeBudget(() => setBudget(this.budgetSheet.categoryId, amount))
+    },
+    async deleteBudget() {
+      await this.changeBudget(async () => {
+        try {
+          await removeBudget(this.budgetSheet.categoryId)
+        } catch (error) {
+          // Already removed elsewhere: the goal is reached
+          if (error?.response?.status !== 404) {
+            throw error
+          }
+        }
+      })
+    },
+    async changeBudget(request) {
+      this.budgetSheet.pending = true
+      this.budgetSheet.failure = ''
+
+      try {
+        await request()
+      } catch (error) {
+        console.error('[ExpensesPage] monthly limit', error)
+        this.budgetSheet.failure = 'Could not save the limit. Try again.'
+        this.budgetSheet.pending = false
+
+        return
+      }
+
+      this.budgetSheet.pending = false
+      this.budgetSheet.isOpen = false
+      await this.fetchBudgetData()
+    },
     getButtonBackgroundColor(index) {
-      return this.colors[index]
+      // Rows added for a limit have no slice in the chart, so no colour in its scale
+      return this.colors[index] || BUTTON_BACKGROUND_COLORS[0]
     },
     onDateFilterInput(value) {
       this.dateFilter = value
@@ -383,7 +547,7 @@ export default {
       return
     }
 
-    await Promise.all([this.fetchExpenses(), this.fetchTags()])
+    await Promise.all([this.fetchExpenses(), this.fetchTags(), this.fetchBudgetData()])
   }
 }
 </script>
@@ -414,6 +578,16 @@ export default {
   border: 1px solid #f6fdeb;
   border-radius: 26px;
   padding: 4px 16px;
+}
+
+.budget-row {
+  padding: 6px 0;
+  font-size: 15px;
+  border-bottom: 1px solid rgba(246, 253, 235, 0.3);
+}
+
+.budget-row-text {
+  word-break: break-word;
 }
 
 .cost {
