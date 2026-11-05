@@ -22,7 +22,7 @@
       <div class="d-flex justify-end w-100">
         <v-btn color="#f2f5e9" @click="$emit('editFund')" icon="mdi-pencil" />
         <v-btn color="#f2f5e9" @click="handleTransfer" icon="mdi-swap-horizontal" />
-        <v-btn color="#f2f5e9" @click="$emit('deleteFund')" icon="mdi-delete" />
+        <v-btn color="#f2f5e9" @click="$emit('archiveFund')" icon="mdi-archive-arrow-down" />
       </div>
     </template>
   </v-card>
